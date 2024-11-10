@@ -1,8 +1,7 @@
-import argparse
 import unrealsdk
 from typing import TypedDict
-from mods_base import command, keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption
-from unrealsdk.hooks import Type, Block
+from mods_base import keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption
+from unrealsdk.hooks import Type
 from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction
 from .maps import *
 from .commands import *
@@ -13,7 +12,6 @@ myPawn = None
 myPawnButForNoclip = None
 noclip: bool = False
 saveslot: int = 0
-locationsforthismap: list = []
 thirdperson: bool = False
 wantstophasejump: bool = False
 
@@ -58,15 +56,15 @@ def prepLocations() -> None:
 
 prepLocations()
 
-# ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName
 
 def setFPS(_: SliderOption, new_value: int) -> None:
-    ENGINE.MaxSmoothedFrameRate = DesiredFPS.value
-    ENGINE.MinSmoothedFrameRate = DesiredFPS.value
+    ENGINE.MaxSmoothedFrameRate = new_value
+    ENGINE.MinSmoothedFrameRate = new_value
     return None
 
 def displaymessage(message: str) -> None:
-    get_pc().myHUD.GetHUDMovie().AddCriticalText(0, message, MsgDisplayTime.value, unrealsdk.make_struct("Color", R=255, G=255, B=255, A=255), get_pc().myHUD.WPRI)
+    get_pc().myHUD.GetHUDMovie().AddCriticalText(0, message, MsgDisplayTime.value, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+
 
 @keybind(identifier="Godmode", key=None, event_filter=EInputEvent.IE_Pressed)
 def doGodmode():
@@ -126,7 +124,7 @@ def doSelfRevive():
 
 @keybind(identifier="Save Location", key=None, event_filter=EInputEvent.IE_Pressed)
 def doSaveLocation():
-    global savedlocations, locationsforthismap, saveslot
+    global savedlocations, saveslot
     thismapsindex: int = -1
     for mapindex in savedlocations:
         if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == savedlocations[savedlocations.index(mapindex)]["map"]:
@@ -157,7 +155,7 @@ def doLoadLocation():
         displaymessage("Could not find this map in the list, error")
     else:
         pcon = get_pc()
-        if len(savedlocations[thismapsindex]["locations"]) < saveslot:
+        if len(savedlocations[thismapsindex]["locations"]) == 0 or len(savedlocations[thismapsindex]["locations"]) < saveslot:
             displaymessage(f"No Saved Location in slot <font color = \"#FFD700\">{saveslot}</font>")
         else:
             # why was this such a pain in the ass
@@ -170,13 +168,30 @@ def doLoadLocation():
 @keybind(identifier="Increase Location Slot", key=None, event_filter=EInputEvent.IE_Pressed)
 def increaseLocationSlot() -> None:
     global saveslot
+    thismapsindex: int = -1
+    for mapindex in savedlocations:
+        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == savedlocations[savedlocations.index(mapindex)]["map"]:
+            thismapsindex = savedlocations.index(mapindex)
+    
     saveslot += 1
+
+    if saveslot > len(savedlocations[thismapsindex]["locations"]):
+        saveslot = 0
+
     displaymessage(f"Using Slot: <font color = \"#FFD700\">{saveslot}</font>")
 
 @keybind(identifier="Decrease Location Slot", key=None, event_filter=EInputEvent.IE_Pressed)
 def decreaseLocationSlot() -> None:
     global saveslot
+    thismapsindex: int = -1
+    for mapindex in savedlocations:
+        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == savedlocations[savedlocations.index(mapindex)]["map"]:
+            thismapsindex = savedlocations.index(mapindex)
+
     saveslot -= 1
+    if saveslot < 0:
+        saveslot = len(savedlocations[thismapsindex]["locations"])
+
     displaymessage(f"Using Slot: <font color = \"#FFD700\">{saveslot}</font>")
 
 @keybind(identifier="Open Fast Travel Menu/Respec", key=None, event_filter=EInputEvent.IE_Pressed)
@@ -213,9 +228,12 @@ def doKillAll():
 
 @keybind(identifier="Delete Dropped Items", key=None, event_filter=EInputEvent.IE_Pressed)
 def doDeleteItems():
+    count: int = 0
     for drop in unrealsdk.find_all("WillowPickup")[1:]:
         if drop.bIsMissionItem == False:
             drop.Behavior_Destroy()
+            count += 1
+    displaymessage(f"{count} Items Deleted")
 
 @keybind(identifier="Toggle HUD", key=None, event_filter=EInputEvent.IE_Pressed)
 def doToggleHUD():
@@ -281,30 +299,5 @@ def exitPhasewalk(obj: UObject, __args: WrappedStruct, __ret: any, __func: Bound
         unrealsdk.find_all("WillowPlayerInput")[-1].Jump()
         wantstophasejump = False
     return None
-"""
-
-    for den in unrealsdk.find_all("PopulationOpportunityDen"):
-        den.MaxTotalActors = int(den.MaxTotalActors * 10)
-        den.SpawnData.MaxActiveActors = int(den.SpawnData.MaxActiveActors * 10)
-        den.MaxActiveActorsIsNormal = int(den.MaxActiveActorsIsNormal * 10)
-        den.MaxActiveActorsIsWarned = int(den.MaxActiveActorsIsWarned * 10)
-        den.MaxActiveActorsThreatened = int(den.MaxActiveActorsThreatened * 10)
-
-    #for encounter in unrealsdk.find_all("PopulationEncounter"):
-
-
-@hook(hook_func="GearboxFramework.PopulationMaster:SpawnPopulationControlledActor", hook_type=Type.PRE)
-def doEnemySpawn(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
-    obj.MaxActorCost = int(obj.MaxActorCost * 10)
-    return None
-
-"""
-"""
-this doesnt work sadly
-
-@hook(hook_func="WillowGame.WillowPlayerController:GetMaxExpLevel", hook_type=Type.PRE)
-def maxLevelOverride(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> type[Block]:
-    return Block, 30
-"""
 
 build_mod()

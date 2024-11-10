@@ -1,6 +1,5 @@
 from argparse import Namespace
 from mods_base import command, get_pc
-import unrealsdk
 
 @command("dropitem", description="spawns the specified number of items from a loot pool: spawnitem pool amount")
 def spawnItems(args: Namespace) -> None:
