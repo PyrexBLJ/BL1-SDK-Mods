@@ -1,6 +1,6 @@
 import unrealsdk
 from typing import TypedDict
-from mods_base import keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption
+from mods_base import keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption, NestedOption
 from unrealsdk.hooks import Type
 from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction
 from .maps import *
@@ -14,6 +14,7 @@ noclip: bool = False
 saveslot: int = 0
 thirdperson: bool = False
 wantstophasejump: bool = False
+ignorenextdrop: bool = False
 
 
 FOV: SliderOption = SliderOption("FOV", 110, 65, 180, 1, True)
@@ -22,7 +23,11 @@ MsgDisplayTime: SliderOption = SliderOption("Top Screen Message Time", 3.5, 0, 5
 UseHLQNoclip: BoolOption = BoolOption("Use HLQ Noclip", True, "Yes", "No")
 DesiredFPS: SliderOption = SliderOption("Desired FPS", 120, 30, 1024, 1, True, on_change = lambda _, new_value: setFPS(_, new_value))
 MapforTravel: DropdownOption = DropdownOption("Map for Travel Keybind", "arid_p", maps.maplist)
-PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off")
+PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off", description="Displays a message on screen whenever a pearl drops from an enemy or spawns in a chest")
+ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
+DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
+TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
+TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
 
 
 class location(TypedDict):
@@ -54,9 +59,42 @@ def prepLocations() -> None:
         locationsfile = open(f"{SETTINGS_DIR}\\BonkLocations.json", "+r")
         savedlocations = json.load(locationsfile)
         locationsfile.close()
+    return None
 
 prepLocations()
 
+def mainTODToggle(_: BoolOption, new_value: bool) -> None:
+    if new_value == True:
+        ENGINE.GetCurrentWorldInfo().GRI.TimeOfDay = new_value
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRate = 0.0
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRateBaseValue = 0.0
+        for tod in unrealsdk.find_all("WillowSeqAct_DayNightCycle")[1:]:
+            tod.Position = new_value
+            tod.ForceStartPosition = new_value
+        if get_pc().CheatManager != None:
+            get_pc().CheatManager.SetTimeOfDay(new_value)
+    else:
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRate = new_value
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRateBaseValue = new_value
+    return None
+
+def setTODRate(_: SliderOption, new_value: float) -> None:
+    if ForceSpecificToD == False:
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRate = new_value
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRateBaseValue = new_value
+    return None
+
+def changeTOD(_: SliderOption, new_value: float) -> None:
+    if ForceSpecificToD == True:
+        ENGINE.GetCurrentWorldInfo().GRI.TimeOfDay = new_value
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRate = 0.0
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRateBaseValue = 0.0
+        for tod in unrealsdk.find_all("WillowSeqAct_DayNightCycle")[1:]:
+            tod.Position = new_value
+            tod.ForceStartPosition = new_value
+        if get_pc().CheatManager != None:
+            get_pc().CheatManager.SetTimeOfDay(new_value)
+    return None
 
 def setFPS(_: SliderOption, new_value: int) -> None:
     ENGINE.MaxSmoothedFrameRate = new_value
@@ -65,6 +103,7 @@ def setFPS(_: SliderOption, new_value: int) -> None:
 
 def displaymessage(message: str) -> None:
     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, message, MsgDisplayTime.value, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+    return None
 
 
 @keybind(identifier="Godmode", key=None, event_filter=EInputEvent.IE_Pressed)
@@ -242,6 +281,8 @@ def doToggleHUD():
 
 @keybind(identifier="Drop Weapon", key=None, event_filter=EInputEvent.IE_Pressed)
 def doDropWeapon():
+    global ignorenextdrop
+    ignorenextdrop = True
     get_pc().ThrowWeapon()
 
 @keybind(identifier="Freeze Time", key=None, event_filter=EInputEvent.IE_Pressed)
@@ -303,6 +344,10 @@ def exitPhasewalk(obj: UObject, __args: WrappedStruct, __ret: any, __func: Bound
 # 101-169 pearl rarity
 @hook(hook_func="WillowGame.WillowPickup:InitializeFromInventory", hook_type=Type.POST)
 def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
+    global ignorenextdrop
+    if ignorenextdrop == True:
+        ignorenextdrop = False
+        return None
     if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170 and PearlDetector.value == True:
         get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
     return None
@@ -313,4 +358,18 @@ def detectPearlChest(obj: UObject, __args: WrappedStruct, __ret: any, __func: Bo
         get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
     return None
 
-build_mod()
+@hook(hook_func="Engine.SequenceOp:Activated", hook_type=Type.POST)
+def forceTimeOfDay(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
+    if ForceSpecificToD.value == True and "WillowSeqAct_DayNightCycle" in str(obj):
+        # bro cmon i tried way too much shit for it to be this fuckin simple
+        obj.Position = DesiredTimeOfDay.value
+        obj.ForceStartPosition = DesiredTimeOfDay.value
+        ENGINE.GetCurrentWorldInfo().GRI.TimeOfDay = DesiredTimeOfDay.value
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRate = 0.0
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRateBaseValue = 0.0
+    elif ForceSpecificToD.value == False and "WillowSeqAct_DayNightCycle" in str(obj):
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRate = TimeOfDayRate.value
+        ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRateBaseValue = TimeOfDayRate.value
+    return None
+
+build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, MapforTravel, TimeOfDayOptions])
