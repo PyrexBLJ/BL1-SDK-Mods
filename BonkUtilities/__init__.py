@@ -369,8 +369,9 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
     if ignorenextdrop == True:
         ignorenextdrop = False
         return None
-    if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170 and PearlDetector.value == True:
-        get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+    if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170:
+        if PearlDetector.value == True:
+            get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
 
         # im kinda sorry for the following war crime
 
