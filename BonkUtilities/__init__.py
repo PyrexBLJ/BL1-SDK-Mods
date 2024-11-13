@@ -27,6 +27,7 @@ PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off",
 ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
+CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "Yes", "No", description="Tracks Craw kills, pearl drops, drop odds and the last run where u got a pearl. dumps all of these values into separate text files. Manual counter override commands: crawkills [kills], pearlcount [pearl count], lastpearl [last run where you got a pearl]", on_change = lambda _, new_value: crawTrackerToggle(_, new_value))
 TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
 
 
@@ -62,6 +63,26 @@ def prepLocations() -> None:
     return None
 
 prepLocations()
+
+def crawTrackerToggle(_: BoolOption, new_value: bool) -> None:
+    if new_value == True:
+        if not os.path.isfile(f"{SETTINGS_DIR}\\CrawKills.txt"):
+            file = open(f"{SETTINGS_DIR}\\CrawKills.txt", "+a")
+            file.write("0")
+            file.close
+        if not os.path.isfile(f"{SETTINGS_DIR}\\PearlCount.txt"):
+            file = open(f"{SETTINGS_DIR}\\PearlCount.txt", "+a")
+            file.write("0")
+            file.close
+        if not os.path.isfile(f"{SETTINGS_DIR}\\PearlOdds.txt"):
+            file = open(f"{SETTINGS_DIR}\\PearlOdds.txt", "+a")
+            file.write("0")
+            file.close
+        if not os.path.isfile(f"{SETTINGS_DIR}\\LastPearlRun.txt"):
+            file = open(f"{SETTINGS_DIR}\\LastPearlRun.txt", "+a")
+            file.write("0")
+            file.close
+    return None
 
 def mainTODToggle(_: BoolOption, new_value: bool) -> None:
     if new_value == True:
@@ -350,6 +371,41 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
         return None
     if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170 and PearlDetector.value == True:
         get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+
+        # im kinda sorry for the following war crime
+
+        if CrawTracker.value == True:
+            if get_pc().GetInventoryPawn() == None:
+                return None
+            for item in get_pc().GetInventoryPawn().EquippedItems:
+                if obj == item:
+                    return None
+            equippedweaps: list = [None, None, None, None]
+            get_pc().GetInventoryPawn().InvManager.GetEquippedWeapons(equippedweaps[0], equippedweaps[1], equippedweaps[2], equippedweaps[3])
+            for weapon in equippedweaps:
+                if obj == weapon:
+                    return None
+            file = open(f"{SETTINGS_DIR}\\PearlCount.txt", "+r")
+            numofdrops: int = 0
+            numofdrops = int(file.read())
+            numofdrops += 1
+            file.seek(0)
+            file.write(str(numofdrops))
+            file.truncate()
+            file.close()
+
+            file1 = open(f"{SETTINGS_DIR}\\CrawKills.txt", "+r")
+            run = int(file1.read())
+            file1.close()
+            if numofdrops != 0:
+                pearlodds: float = round(run / numofdrops, 2)
+                file2 = open(f"{SETTINGS_DIR}\\PearlOdds.txt", "+w")
+                file2.write(str(pearlodds))
+                file2.close()
+
+            file3 = open(f"{SETTINGS_DIR}\\LastPearlRun.txt", "+w")
+            file3.write(str(run))
+            file3.close()
     return None
 
 @hook(hook_func="WillowGame.WillowPickup:AdjustPickupPhysicsAndCollisionForBeingAttached", hook_type=Type.POST)
@@ -372,4 +428,28 @@ def forceTimeOfDay(obj: UObject, __args: WrappedStruct, __ret: any, __func: Boun
         ENGINE.GetCurrentWorldInfo().GRI.DayNightCycleRateBaseValue = TimeOfDayRate.value
     return None
 
-build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, MapforTravel, TimeOfDayOptions])
+@hook(hook_func="WillowGame.WillowPawn:Died", hook_type=Type.POST)
+def pawnDied(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
+    if CrawTracker.value == True:
+        if str(obj.ControllerTemplate.AIClass.KilledStatID) == "STAT_PLAYER_KILLS_CRAWMERAX":
+            file = open(f"{SETTINGS_DIR}\\CrawKills.txt", "+r")
+            numofkills: int = 0
+            numofkills = int(file.read())
+            numofkills += 1
+            file.seek(0)
+            file.write(str(numofkills))
+            file.truncate()
+            file.close()
+
+            file1 = open(f"{SETTINGS_DIR}\\PearlCount.txt", "+r")
+            pearls = int(file1.read())
+            file1.close()
+
+            if pearls != 0:
+                pearlodds: float = round(numofkills / pearls, 2)
+                file2 = open(f"{SETTINGS_DIR}\\PearlOdds.txt", "+w")
+                file2.write(str(pearlodds))
+                file2.close()
+    return None
+
+build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, MapforTravel, CrawTracker, TimeOfDayOptions])
