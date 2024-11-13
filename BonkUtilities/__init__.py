@@ -28,6 +28,7 @@ ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False,
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
 CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "Yes", "No", description="Tracks Craw kills, pearl drops, drop odds and the last run where u got a pearl. dumps all of these values into separate text files. Manual counter override commands: crawkills [kills], pearlcount [pearl count], lastpearl [last run where you got a pearl]", on_change = lambda _, new_value: crawTrackerToggle(_, new_value))
+HoldFFSpeed: SliderOption = SliderOption("Hold To Fast Forward Speed", 16, 0.1, 64, 0.1, False, description="This can also slow the game down if you want")
 TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
 
 
@@ -337,6 +338,13 @@ def doPhasejump():
 def doTravel():
     get_pc().ConsoleCommand(f"openl {MapforTravel.value}")
 
+@keybind(identifier="Hold To Fast Forward", key=None, event_filter=None)
+def doFastForward(event: EInputEvent):
+    if event == EInputEvent.IE_Pressed:
+        ENGINE.GetCurrentWorldInfo().TimeDilation = HoldFFSpeed.value
+    elif event == EInputEvent.IE_Released:
+        ENGINE.GetCurrentWorldInfo().TimeDilation = 1.0
+
 
 
 @hook(hook_func="WillowGame.WillowPlayerController:SpawningProcessComplete", hook_type=Type.POST)
@@ -453,4 +461,4 @@ def pawnDied(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunct
                 file2.close()
     return None
 
-build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, MapforTravel, CrawTracker, TimeOfDayOptions])
+build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, MapforTravel, CrawTracker, HoldFFSpeed, TimeOfDayOptions])
