@@ -27,7 +27,7 @@ PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off",
 ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
-CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "Yes", "No", description="Tracks Craw kills, pearl drops, drop odds and the last run where u got a pearl. dumps all of these values into separate text files. Manual counter override commands: crawkills [kills], pearlcount [pearl count], lastpearl [last run where you got a pearl]", on_change = lambda _, new_value: crawTrackerToggle(_, new_value))
+CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "On", "Off", description="Tracks Craw kills, pearl drops, drop odds and the last run where u got a pearl. dumps all of these values into separate text files. Manual counter override commands: crawkills [kills], pearlcount [pearl count], lastpearl [last run where you got a pearl]", on_change = lambda _, new_value: crawTrackerToggle(_, new_value))
 HoldFFSpeed: SliderOption = SliderOption("Hold To Fast Forward Speed", 16, 0.1, 64, 0.1, False, description="This can also slow the game down if you want")
 TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
 
@@ -345,6 +345,13 @@ def doFastForward(event: EInputEvent):
     elif event == EInputEvent.IE_Released:
         ENGINE.GetCurrentWorldInfo().TimeDilation = 1.0
 
+@keybind(identifier="Respawn Enemies", key=None, event_filter=EInputEvent.IE_Pressed, description="Some respawned enemies dont drop loot on death, namely craw")
+def doEnemyRespawn():
+    for den in unrealsdk.find_all("PopulationOpportunityDen")[1:]:
+        den.IsEnabled = True
+        den.RespawnKilledActors(1.0)
+
+
 
 
 @hook(hook_func="WillowGame.WillowPlayerController:SpawningProcessComplete", hook_type=Type.POST)
@@ -380,6 +387,7 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
     if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170:
         if PearlDetector.value == True:
             get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+            get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
 
         # im kinda sorry for the following war crime
 
