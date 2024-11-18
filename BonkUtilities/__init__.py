@@ -351,6 +351,10 @@ def doEnemyRespawn():
         den.IsEnabled = True
         den.RespawnKilledActors(1.0)
 
+@keybind(identifier="Reset Action Skill Cooldown", key=None, event_filter=EInputEvent.IE_Pressed)
+def doResetACCooldown():
+    get_pc().SkillCooldownPool.PoolManager.ResourcePools[get_pc().SkillCooldownPool.PoolIndexInManager].SetCurrentValue(0.0)
+
 
 
 

@@ -1,10 +1,10 @@
 [project]
 name = "Bonk Utilities"
-version = "1.0.4"
+version = "1.0.5"
 authors = [{ name = "Pyrex" }]
 description = "Some Useful Stuff idk"
 
 [tool.sdkmod]
 name = "Bonk Utilities"
 license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
-version = "1.0.4"
+version = "1.0.5"
