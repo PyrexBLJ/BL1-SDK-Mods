@@ -8,4 +8,4 @@ feel free to use/edit em
 The returning absolute mess of a utility mod. theres a bunch of stuff in here and no i probably wont clean up the source.
 
 ![Farm Tracker](https://github.com/PyrexBLJ/BL1-SDK-Mods/tree/main/FarmTracker)
-Mod that is able to track various in game things, then prinnt them to text files for use in obs/screen capture software.
+Mod that is able to track various in game things, then print them to text files for use in obs/other screen capture software.
