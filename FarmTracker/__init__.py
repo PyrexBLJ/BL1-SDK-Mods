@@ -7,7 +7,7 @@ from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction
 from .filestuff import *
 import os, json
 
-from GooberLog import log
+#from GooberLog import log
 
 initFarmTracker()
 
@@ -294,7 +294,6 @@ def useInteractiveObject(obj: UObject, __args: WrappedStruct, __ret: any, __func
 @hook(hook_func="WillowGame.WillowInteractiveObject:TakeDamage", hook_type=Type.PRE)
 def damageInteractiveObject(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
     global grabnextobject, currentfarm, objlist
-    log(obj)
     if doTracking.value == False:
         return None
     if grabnextobject == True and obj.bCanBeUsed and obj.InteractiveObjectDefinition.bCanTakeDirectDamage and obj.InteractiveObjectDefinition.bCanTakeRadiusDamage:
