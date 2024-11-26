@@ -1,0 +1,10 @@
+[project]
+name = "PartDisplay"
+version = "1.0.0"
+authors = [{ name = "Pyrex" }]
+description = "Shows weapon and item parts on screen"
+
+[tool.sdkmod]
+name = "Part Display"
+license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
+version = "1.0.0"

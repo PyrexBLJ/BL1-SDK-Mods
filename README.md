@@ -9,3 +9,6 @@ The returning absolute mess of a utility mod. theres a bunch of stuff in here an
 
 ![Farm Tracker](https://github.com/PyrexBLJ/BL1-SDK-Mods/tree/main/FarmTracker)
 Mod that is able to track various in game things, then print them to text files for use in obs/other screen capture software.
+
+![Part Display](https://github.com/PyrexBLJ/BL1-SDK-Mods/tree/main/PartDisplay)
+Shows weapon and item parts on screen when looking at a dropped item.
