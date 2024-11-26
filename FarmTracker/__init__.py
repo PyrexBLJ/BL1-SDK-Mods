@@ -81,7 +81,7 @@ if getValuestr(f"{SETTINGS_DIR}\\FarmTracker\\AutoLoad.txt") != "None":
 
 @command("farmhelp", description="List available commands for the farm tracker")
 def farmHelp(args: Namespace) -> None:
-    print("Commands: do [command name] -h on any of these for more info\nnewfarm\nlistfarms\nsavefarm\nloadfarm\ntrackitem\nsetkills\nsetitemcount\nsetlegendaries\nsetpearls\nwherefarm")
+    print("Commands: do [command name] -h on any of these for more info\nnewfarm\nlistfarms\nsavefarm\nloadfarm\ntrackitem\nsetenemy\nsetkills\nsetitemcount\nsetlegendaries\nsetpearls\nwherefarm")
     return None
 
 @command("newfarm", description="create a new tracked farm by name")
@@ -190,6 +190,15 @@ setPearls.add_argument("drops", help="the number of pearls to set the tracker to
 def whereFarm(args: Namespace) -> None:
     print(f"{SETTINGS_DIR}\\FarmTracker")
     return None
+
+@command("setenemy", description="Manual override for setting what enemy you want to track, instead of using the keybind & autotrack. useful for a more generic farm.")
+def setEnemy(args: Namespace) -> None:
+    global currentfarm
+    currentfarm["enemyname"] = str(args.enemyname)
+    setValuestr(f"{SETTINGS_DIR}\\FarmTracker\\TrackedEnemyWithCount.txt", f"{currentfarm["enemyname"]}: {currentfarm["enemykills"]}")
+    return None
+
+setEnemy.add_argument("enemyname", help="the name you want to check for when killing an enemy")
 
 
 
