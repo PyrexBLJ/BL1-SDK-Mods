@@ -285,6 +285,8 @@ def doResetTime():
 @keybind(identifier="Kill All", key=None, event_filter=EInputEvent.IE_Pressed)
 def doKillAll():
     for pawn in get_pc().ThePawnList.FullPawnList:
+        if not pawn:
+            continue
         if pawn.Class.Name != "WillowPlayerPawn" and pawn.Allegiance not in ("gd_allegiance.Player.PlayerAllegiance", "gd_allegiance.Friendly.FriendlyAllegiance", "gd_allegiance.Settler.SettlerAllegiance"):
             pawn.SetHealth(-1)
 
