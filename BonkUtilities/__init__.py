@@ -24,6 +24,7 @@ UseHLQNoclip: BoolOption = BoolOption("Use HLQ Noclip", True, "Yes", "No")
 DesiredFPS: SliderOption = SliderOption("Desired FPS", 120, 30, 1024, 1, True, on_change = lambda _, new_value: setFPS(_, new_value))
 MapforTravel: DropdownOption = DropdownOption("Map for Travel Keybind", "arid_p", maps.maplist)
 PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off", description="Displays a message on screen whenever a pearl drops from an enemy or spawns in a chest")
+EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On", "Off", description="Displays a message on screen whenever a rare eridian item drops from an enemy or spawns in a chest")
 ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
@@ -390,6 +391,10 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
     if ignorenextdrop == True:
         ignorenextdrop = False
         return None
+    if str(obj.Inventory.GetShortHumanReadableName()).split(" ", 1)[1] in ("Eridian Stampeding Spatter Gun", "Mega Cannon", "Eridian Firebomb", "Eridian Fireball", "Eridian Rolling Spatter Gun", "Eridian Splat Gun", "Eridian Glob Gun"):
+        if EridianDetector.value == True:
+            get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#fc9d05\" size = \"32\">Rare Eridian Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+            get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
     if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170:
         if PearlDetector.value == True:
             get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
@@ -475,4 +480,4 @@ def pawnDied(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunct
                 file2.close()
     return None
 
-build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, MapforTravel, CrawTracker, HoldFFSpeed, TimeOfDayOptions])
+build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, MapforTravel, CrawTracker, HoldFFSpeed, TimeOfDayOptions])
