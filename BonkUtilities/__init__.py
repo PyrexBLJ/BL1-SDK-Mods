@@ -438,12 +438,6 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
             file3.close()
     return None
 
-@hook(hook_func="WillowGame.WillowPickup:AdjustPickupPhysicsAndCollisionForBeingAttached", hook_type=Type.POST)
-def detectPearlChest(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
-    if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170 and PearlDetector.value == True:
-        get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-    return None
-
 @hook(hook_func="Engine.SequenceOp:Activated", hook_type=Type.POST)
 def forceTimeOfDay(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
     if ForceSpecificToD.value == True and "WillowSeqAct_DayNightCycle" in str(obj):
