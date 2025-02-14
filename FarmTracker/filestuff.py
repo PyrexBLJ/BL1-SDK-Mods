@@ -1,9 +1,12 @@
 import os
-from mods_base import SETTINGS_DIR
+from mods_base import SETTINGS_DIR #type: ignore
 
 def initFarmTracker() -> None:
     if not os.path.exists(f"{SETTINGS_DIR}\\FarmTracker"):
         os.makedirs(f"{SETTINGS_DIR}\\FarmTracker")
+
+    if not os.path.exists(f"{SETTINGS_DIR}\\FarmTracker\\Farms"):
+        os.makedirs(f"{SETTINGS_DIR}\\FarmTracker\\Farms")
 
     if not os.path.isfile(f"{SETTINGS_DIR}\\FarmTracker\\AutoLoad.txt"):
         file = open(f"{SETTINGS_DIR}\\FarmTracker\\AutoLoad.txt", "+a")

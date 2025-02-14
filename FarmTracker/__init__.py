@@ -1,9 +1,9 @@
 from argparse import Namespace
-import unrealsdk
+import unrealsdk #type: ignore
 from typing import TypedDict
-from mods_base import command, keybind, EInputEvent, get_pc, build_mod, hook, SETTINGS_DIR, BoolOption
-from unrealsdk.hooks import Type
-from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction
+from mods_base import command, keybind, EInputEvent, get_pc, build_mod, hook, SETTINGS_DIR, BoolOption #type: ignore
+from unrealsdk.hooks import Type #type: ignore
+from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction #type: ignore
 from .filestuff import *
 import os, json
 
