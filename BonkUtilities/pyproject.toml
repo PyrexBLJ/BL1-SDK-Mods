@@ -2,9 +2,11 @@
 name = "Bonk Utilities"
 version = "1.0.8"
 authors = [{ name = "Pyrex" }]
-description = "Some Useful Stuff idk"
+description = "Some useful options and keybinds."
 
 [tool.sdkmod]
 name = "Bonk Utilities"
 license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
+supported_games = ["BL1"]
+download = "https://github.com/PyrexBLJ/BL1-SDK-Mods/raw/refs/heads/main/BonkUtilities/BonkUtilities.sdkmod"
 version = "1.0.8"

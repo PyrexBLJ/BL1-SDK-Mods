@@ -2,9 +2,11 @@
 name = "PartDisplay"
 version = "1.0.0"
 authors = [{ name = "Pyrex" }]
-description = "Shows weapon and item parts on screen"
+description = "Shows weapon and item parts on screen when you look at them on the ground."
 
 [tool.sdkmod]
 name = "Part Display"
 license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
+supported_games = ["BL1"]
+download = "https://github.com/PyrexBLJ/BL1-SDK-Mods/raw/refs/heads/main/PartDisplay/PartDisplay.sdkmod"
 version = "1.0.0"

@@ -2,9 +2,11 @@
 name = "Farm Tracker"
 version = "1.0.2"
 authors = [{ name = "Pyrex" }]
-description = "Track some farms"
+description = "Item, kill and interactive object use tracker for use in mainly OBS. Nothing is shown on screen in game."
 
 [tool.sdkmod]
 name = "Farm Tracker"
 license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
+supported_games = ["BL1"]
+download = "https://github.com/PyrexBLJ/BL1-SDK-Mods/raw/refs/heads/main/FarmTracker/FarmTracker.sdkmod"
 version = "1.0.2"
