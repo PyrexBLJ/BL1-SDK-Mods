@@ -1,7 +1,7 @@
 import unrealsdk
 from typing import TypedDict
 from mods_base import keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption, NestedOption
-from unrealsdk.hooks import Type
+from unrealsdk.hooks import Type, Block
 from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction
 from .maps import *
 from .commands import *
@@ -358,8 +358,21 @@ def doEnemyRespawn():
 def doResetACCooldown():
     get_pc().SkillCooldownPool.PoolManager.ResourcePools[get_pc().SkillCooldownPool.PoolIndexInManager].SetCurrentValue(0.0)
 
+@keybind(identifier="Sell Looked At Item", key=None, event_filter=EInputEvent.IE_Pressed)
+def sellLookedAtItem():
+    if get_pc().myHUD.SavedLookAtInventory != None:
+        if get_pc().myHUD.SavedLookAtInventory.CashValue > 0 and get_pc().myHUD.SavedLookAtInventory.Base.bIsMissionItem == False:
+            get_pc().PlayerReplicationInfo.AddCurrencyOnHand(get_pc().myHUD.SavedLookAtInventory.CashValue)
+            get_pc().myHUD.SavedLookAtInventory.Base.Behavior_Destroy()
 
 
+
+
+@hook(hook_func="WillowGame.WillowPlayerPawn:ResurrectPlayer", hook_type=Type.PRE)
+def resurrectPlayer(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> type[Block] | None:
+    with unrealsdk.hooks.prevent_hooking_direct_calls():
+        obj.ResurrectPlayer(__args.ResurrectReason, True, __args.DeadPlayerPRI)
+    return Block
 
 @hook(hook_func="WillowGame.WillowPlayerController:SpawningProcessComplete", hook_type=Type.POST)
 def finishedSpawning(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
@@ -391,51 +404,52 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
     if ignorenextdrop == True:
         ignorenextdrop = False
         return None
-    itemname: list = str(obj.Inventory.GetShortHumanReadableName()).split(" ", 1)
-    if len(itemname) >= 1:
-        if itemname[1] in ("Eridian Stampeding Spatter Gun", "Mega Cannon", "Eridian Firebomb", "Eridian Fireball", "Eridian Rolling Spatter Gun", "Eridian Splat Gun"):
-            if EridianDetector.value == True:
-                get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#fc9d05\" size = \"32\">Rare Eridian Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+    if str(obj.Inventory.GetShortHumanReadableName()) != "":
+        itemname: list = str(obj.Inventory.GetShortHumanReadableName()).split(" ", 1)
+        if len(itemname) > 0:
+            if itemname[1] in ("Eridian Stampeding Spatter Gun", "Mega Cannon", "Eridian Firebomb", "Eridian Fireball", "Eridian Rolling Spatter Gun", "Eridian Splat Gun"):
+                if EridianDetector.value == True:
+                    get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#fc9d05\" size = \"32\">Rare Eridian Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+                    get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
+        if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170:
+            if PearlDetector.value == True:
+                get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
                 get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
-    if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170:
-        if PearlDetector.value == True:
-            get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-            get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
 
-        # im kinda sorry for the following war crime
+            # im kinda sorry for the following war crime
 
-        if CrawTracker.value == True:
-            if get_pc().GetInventoryPawn() == None:
-                return None
-            for item in get_pc().GetInventoryPawn().EquippedItems:
-                if obj == item:
+            if CrawTracker.value == True:
+                if get_pc().GetInventoryPawn() == None:
                     return None
-            equippedweaps: list = [None, None, None, None]
-            get_pc().GetInventoryPawn().InvManager.GetEquippedWeapons(equippedweaps[0], equippedweaps[1], equippedweaps[2], equippedweaps[3])
-            for weapon in equippedweaps:
-                if obj == weapon:
-                    return None
-            file = open(f"{SETTINGS_DIR}\\PearlCount.txt", "+r")
-            numofdrops: int = 0
-            numofdrops = int(file.read())
-            numofdrops += 1
-            file.seek(0)
-            file.write(str(numofdrops))
-            file.truncate()
-            file.close()
+                for item in get_pc().GetInventoryPawn().EquippedItems:
+                    if obj == item:
+                        return None
+                equippedweaps: list = [None, None, None, None]
+                get_pc().GetInventoryPawn().InvManager.GetEquippedWeapons(equippedweaps[0], equippedweaps[1], equippedweaps[2], equippedweaps[3])
+                for weapon in equippedweaps:
+                    if obj == weapon:
+                        return None
+                file = open(f"{SETTINGS_DIR}\\PearlCount.txt", "+r")
+                numofdrops: int = 0
+                numofdrops = int(file.read())
+                numofdrops += 1
+                file.seek(0)
+                file.write(str(numofdrops))
+                file.truncate()
+                file.close()
 
-            file1 = open(f"{SETTINGS_DIR}\\CrawKills.txt", "+r")
-            run = int(file1.read())
-            file1.close()
-            if numofdrops != 0:
-                pearlodds: float = round(run / numofdrops, 2)
-                file2 = open(f"{SETTINGS_DIR}\\PearlOdds.txt", "+w")
-                file2.write(str(pearlodds))
-                file2.close()
+                file1 = open(f"{SETTINGS_DIR}\\CrawKills.txt", "+r")
+                run = int(file1.read())
+                file1.close()
+                if numofdrops != 0:
+                    pearlodds: float = round(run / numofdrops, 2)
+                    file2 = open(f"{SETTINGS_DIR}\\PearlOdds.txt", "+w")
+                    file2.write(str(pearlodds))
+                    file2.close()
 
-            file3 = open(f"{SETTINGS_DIR}\\LastPearlRun.txt", "+w")
-            file3.write(str(run))
-            file3.close()
+                file3 = open(f"{SETTINGS_DIR}\\LastPearlRun.txt", "+w")
+                file3.write(str(run))
+                file3.close()
     return None
 
 @hook(hook_func="Engine.SequenceOp:Activated", hook_type=Type.POST)
