@@ -30,6 +30,7 @@ DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
 CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "On", "Off", description="Tracks Craw kills, pearl drops, drop odds and the last run where u got a pearl. dumps all of these values into separate text files. Manual counter override commands: crawkills [kills], pearlcount [pearl count], lastpearl [last run where you got a pearl]", on_change = lambda _, new_value: crawTrackerToggle(_, new_value))
 HoldFFSpeed: SliderOption = SliderOption("Hold To Fast Forward Speed", 16, 0.1, 64, 0.1, False, description="This can also slow the game down if you want")
+DisableBlueTunnel: BoolOption = BoolOption("Disable Blue Tunnel", True, "Yes", "No")
 TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
 
 
@@ -363,16 +364,22 @@ def sellLookedAtItem():
     if get_pc().myHUD.SavedLookAtInventory != None:
         if get_pc().myHUD.SavedLookAtInventory.CashValue > 0 and get_pc().myHUD.SavedLookAtInventory.Base.bIsMissionItem == False:
             get_pc().PlayerReplicationInfo.AddCurrencyOnHand(get_pc().myHUD.SavedLookAtInventory.CashValue)
-            get_pc().myHUD.SavedLookAtInventory.Base.Behavior_Destroy()
+            get_pc().myHUD.SavedLookAtInventory.Base.FailedPickup()
+            get_pc().myHUD.SavedLookAtInventory.Base.PickupShrinkDuration = 0.25
+            get_pc().myHUD.SavedLookAtInventory.Base.ShrinkPickupBeforeDestruction()
+            get_pc().myHUD.SavedLookAtInventory.Base.Behavior_ChangeUsability(2)
 
 
 
 
 @hook(hook_func="WillowGame.WillowPlayerPawn:ResurrectPlayer", hook_type=Type.PRE)
 def resurrectPlayer(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> type[Block] | None:
-    with unrealsdk.hooks.prevent_hooking_direct_calls():
-        obj.ResurrectPlayer(__args.ResurrectReason, True, __args.DeadPlayerPRI)
-    return Block
+    if DisableBlueTunnel.value == True:
+        with unrealsdk.hooks.prevent_hooking_direct_calls():
+            obj.ResurrectPlayer(__args.ResurrectReason, True, __args.DeadPlayerPRI)
+        return Block
+    else:
+        return None
 
 @hook(hook_func="WillowGame.WillowPlayerController:SpawningProcessComplete", hook_type=Type.POST)
 def finishedSpawning(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
@@ -490,4 +497,4 @@ def pawnDied(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunct
                 file2.close()
     return None
 
-build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, MapforTravel, CrawTracker, HoldFFSpeed, TimeOfDayOptions])
+build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, TimeOfDayOptions])
