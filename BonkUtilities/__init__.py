@@ -412,8 +412,8 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
         ignorenextdrop = False
         return None
     if str(obj.Inventory.GetShortHumanReadableName()) != "":
-        itemname: list = str(obj.Inventory.GetShortHumanReadableName()).split(" ", 1)
-        if len(itemname) > 0:
+        if str(obj.Inventory.GetShortHumanReadableName()).__contains__(" ") == True:
+            itemname: list = str(obj.Inventory.GetShortHumanReadableName()).split(" ", 1)
             if itemname[1] in ("Eridian Stampeding Spatter Gun", "Mega Cannon", "Eridian Firebomb", "Eridian Fireball", "Eridian Rolling Spatter Gun", "Eridian Splat Gun"):
                 if EridianDetector.value == True:
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#fc9d05\" size = \"32\">Rare Eridian Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
