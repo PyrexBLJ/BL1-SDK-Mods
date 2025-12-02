@@ -25,6 +25,7 @@ DesiredFPS: SliderOption = SliderOption("Desired FPS", 120, 30, 1024, 1, True, o
 MapforTravel: DropdownOption = DropdownOption("Map for Travel Keybind", "arid_p", maps.maplist)
 PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off", description="Displays a message on screen whenever a pearl drops from an enemy or spawns in a chest")
 EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On", "Off", description="Displays a message on screen whenever a rare eridian item drops from an enemy or spawns in a chest")
+HybridDetector: BoolOption = BoolOption("Hybrid Detector", False, "On", "Off", description="Displays a message on screen whenever a hybrid weapon drops from an enemy or spawns in a chest, this WILL destroy any sense of childlike wonder/mystery/suspense you felt checking each drop to see if its the one.")
 ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
@@ -404,6 +405,30 @@ def exitPhasewalk(obj: UObject, __args: WrappedStruct, __ret: any, __func: Bound
         unrealsdk.find_all("WillowPlayerInput")[-1].Jump()
         wantstophasejump = False
     return None
+
+def detectHybrid(item: UObject) -> bool:
+    if "CustomWeap_SupportMG_AjaxSpear" in str(item.DefinitionData.BalanceDefinition) and "acc5_Atlas_Ogre_Explosive" in str(item.DefinitionData.AccessoryPartDefinition):
+        return True
+    elif "CustomWeap_repeater_TheDove" in str(item.DefinitionData.BalanceDefinition) and "acc5_Hornet_Dahl_Corrosive" in str(item.DefinitionData.AccessoryPartDefinition):
+        return True
+    elif "CustomWeap_CombatShotgun_BoomStick" in str(item.DefinitionData.BalanceDefinition) and "acc5_Torgue_FriendlyFire" in str(item.DefinitionData.AccessoryPartDefinition):
+        return True
+    elif "CustomWeap_RocketLauncher_TheRoaster" in str(item.DefinitionData.BalanceDefinition) and "barrel2_Maliwan_Rhino" in str(item.DefinitionData.BarrelPartDefinition):
+        return True
+    elif "CustomWeap_Repeater_HyperionNemesis" in str(item.DefinitionData.BalanceDefinition) and "sight5_Hyperion_Invader" in str(item.DefinitionData.SightPartDefinition):
+        return True
+    elif "CustomWeap_CombatShotgun_TKsWave" in str(item.DefinitionData.BalanceDefinition) and "mag2_Dahl_Bulldog" in str(item.DefinitionData.MagazinePartDefinition):
+        return True
+    elif "CustomWeap_SemiAutoSniper_ReaversEdge" in str(item.DefinitionData.BalanceDefinition) and "barrel1_Dahl_Penetrator" in str(item.DefinitionData.BarrelPartDefinition):
+        return True
+    elif "CustomWeap_SMG_BoneShredder" in str(item.DefinitionData.BalanceDefinition) and "body3_Tediore_Savior" in str(item.DefinitionData.BodyPartDefinition):
+        return True
+    elif "CustomWeap_Repeater_ChiquitoAmigo" in str(item.DefinitionData.BalanceDefinition) and "body3_Tediore_Protector" in str(item.DefinitionData.BodyPartDefinition):
+        return True
+    elif "CustomWeap_SemiAutoSniper_KyrosPower" in str(item.DefinitionData.BalanceDefinition) and "sight5_Atlas_Cyclops" in str(item.DefinitionData.SightPartDefinition):
+        return True
+    return False
+
 # 101-169 pearl rarity
 @hook(hook_func="WillowGame.WillowPickup:InitializeFromInventory", hook_type=Type.POST)
 def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
@@ -418,12 +443,17 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
                 if EridianDetector.value == True:
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#fc9d05\" size = \"32\">Rare Eridian Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
                     get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
+        if HybridDetector.value == True:
+            if "WillowWeapon" in str(obj.Inventory):
+                if detectHybrid(obj.Inventory) == True:
+                    get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color=\"#ffadad\" size=\"32\">H</font><font color=\"#ffd6a5\" size=\"32\">y</font><font color=\"#fdffb6\" size=\"32\">b</font><font color=\"#caffbf\" size=\"32\">r</font><font color=\"#9bf6ff\" size=\"32\">i</font><font color=\"#a0c4ff\" size=\"32\">d</font> <font color=\"#bdb2ff\" size=\"32\">D</font><font color=\"#ffc6ff\" size=\"32\">r</font><font color=\"#ffadad\" size=\"32\">o</font><font color=\"#ffd6a5\" size=\"32\">p</font> <font color=\"#fdffb6\" size=\"32\">D</font><font color=\"#caffbf\" size=\"32\">e</font><font color=\"#9bf6ff\" size=\"32\">t</font><font color=\"#a0c4ff\" size=\"32\">e</font><font color=\"#bdb2ff\" size=\"32\">c</font><font color=\"#ffc6ff\" size=\"32\">t</font><font color=\"#ffadad\" size=\"32\">e</font><font color=\"#ffd6a5\" size=\"32\">d</font><font color=\"#fdffb6\" size=\"32\">!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI) # if this works its gonna look so fuckin cool
+                    get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
         if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170:
             if PearlDetector.value == True:
                 get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
                 get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
 
-            # im kinda sorry for the following war crime
+            # im kinda sorry for the following war crime. (apparently not really cuz i never changed it lol)
 
             if CrawTracker.value == True:
                 if get_pc().GetInventoryPawn() == None:
@@ -497,4 +527,4 @@ def pawnDied(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunct
                 file2.close()
     return None
 
-build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, TimeOfDayOptions])
+build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, TimeOfDayOptions])
