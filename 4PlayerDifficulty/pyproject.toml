@@ -1,0 +1,12 @@
+[project]
+name = "4PlayerDifficulty"
+version = "1.0.0"
+authors = [{ name = "Pyrex" }]
+description = "Make the game a lil bit harder."
+
+[tool.sdkmod]
+name = "4 Player Difficulty"
+license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
+supported_games = ["BL1"]
+download = "
+version = "1.0.0"
