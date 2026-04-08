@@ -2,6 +2,11 @@ from argparse import Namespace
 from mods_base import command, get_pc
 from mods_base.settings import SETTINGS_DIR
 
+@command("buhelp", description="Lists available commands from bonk utilities")
+def BUHelp(args: Namespace) -> None:
+    print("Commands:\n\ndropitem [pool] [amount]\ncrawkills [kill count]\npearlcount [drop count]\nlastpearl [run number]\naddcustomitem [string to search for]\ndeletecustomitem [string to remove]\nlistcustomitems")
+    return None
+
 @command("dropitem", description="spawns the specified number of items from a loot pool: spawnitem pool amount")
 def spawnItems(args: Namespace) -> None:
     numofitems = 1

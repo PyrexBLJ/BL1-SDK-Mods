@@ -1,11 +1,12 @@
 import unrealsdk
 from typing import TypedDict
-from mods_base import keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption, NestedOption
+from mods_base import keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption, NestedOption, command
 from unrealsdk.hooks import Type, Block
 from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction
 from .maps import *
 from .commands import *
 import os, json
+from typing import List
 
 photomode: bool = False
 myPawn = None
@@ -15,6 +16,7 @@ saveslot: int = 0
 thirdperson: bool = False
 wantstophasejump: bool = False
 ignorenextdrop: bool = False
+customitems: List[str] = []
 
 
 FOV: SliderOption = SliderOption("FOV", 110, 65, 180, 1, True)
@@ -26,12 +28,14 @@ MapforTravel: DropdownOption = DropdownOption("Map for Travel Keybind", "arid_p"
 PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off", description="Displays a message on screen whenever a pearl drops from an enemy or spawns in a chest")
 EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On", "Off", description="Displays a message on screen whenever a rare eridian item drops from an enemy or spawns in a chest")
 HybridDetector: BoolOption = BoolOption("Hybrid Detector", False, "On", "Off", description="Displays a message on screen whenever a hybrid weapon drops from an enemy or spawns in a chest, this WILL destroy any sense of childlike wonder/mystery/suspense you felt checking each drop to see if its the one.")
+CustomItemDetector: BoolOption = BoolOption("Custom Item Detector", False, "On", "Off", description="Use the custom item detector list to check for drops, controlled via console commands")
 ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
 CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "On", "Off", description="Tracks Craw kills, pearl drops, drop odds and the last run where u got a pearl. dumps all of these values into separate text files. Manual counter override commands: crawkills [kills], pearlcount [pearl count], lastpearl [last run where you got a pearl]", on_change = lambda _, new_value: crawTrackerToggle(_, new_value))
 HoldFFSpeed: SliderOption = SliderOption("Hold To Fast Forward Speed", 16, 0.1, 64, 0.1, False, description="This can also slow the game down if you want")
 DisableBlueTunnel: BoolOption = BoolOption("Disable Blue Tunnel", True, "Yes", "No")
+LogAwesomeLevels: BoolOption = BoolOption("Log Awesome levels to Console", False, "Yes", "No", description="Print out the level/gamestage/awesomelevel of enemies and interactive objects on kill or use")
 TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
 
 
@@ -432,7 +436,7 @@ def detectHybrid(item: UObject) -> bool:
 # 101-169 pearl rarity
 @hook(hook_func="WillowGame.WillowPickup:InitializeFromInventory", hook_type=Type.POST)
 def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
-    global ignorenextdrop
+    global ignorenextdrop, customitems
     if ignorenextdrop == True:
         ignorenextdrop = False
         return None
@@ -452,6 +456,11 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
             if PearlDetector.value == True:
                 get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
                 get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
+        if CustomItemDetector.value == True:
+            for item in customitems:
+                if item.lower() in str(obj.Inventory.GetShortHumanReadableName()).lower():
+                    get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#ef00fc\" size = \"28\">{item} Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+                    get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
 
             # im kinda sorry for the following war crime. (apparently not really cuz i never changed it lol)
 
@@ -505,6 +514,8 @@ def forceTimeOfDay(obj: UObject, __args: WrappedStruct, __ret: any, __func: Boun
 
 @hook(hook_func="WillowGame.WillowPawn:Died", hook_type=Type.POST)
 def pawnDied(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
+    if LogAwesomeLevels.value == True:
+        print(f"{obj.BalanceDefinitionState.BalanceDefinition.Grades[0].GradeModifiers.DisplayName}: ExpLevel: {obj.ExpLevel} GameStage: {obj.GameStage} AwesomeLevel: {obj.AwesomeLevel}")
     if CrawTracker.value == True:
         if str(obj.ControllerTemplate.AIClass.KilledStatID) == "STAT_PLAYER_KILLS_CRAWMERAX":
             file = open(f"{SETTINGS_DIR}\\CrawKills.txt", "+r")
@@ -527,4 +538,64 @@ def pawnDied(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunct
                 file2.close()
     return None
 
-build_mod(options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, TimeOfDayOptions])
+@hook("WillowGame.WillowInteractiveObject:UseObject", Type.POST_UNCONDITIONAL)
+def useobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> None:
+    if LogAwesomeLevels.value == True:
+        print(f"{obj.InteractiveObjectDefinition.Name}: GameStage: {obj.GameStage} AwesomeLevel: {obj.AwesomeLevel}")
+    return None
+
+
+@command("addcustomitem", description="Add a string to the custom item detector list")
+def AddCustomItemToTrack(args: Namespace) -> None:
+    global customitems
+    customitems.append(str(args.item))
+    file = open(f"{SETTINGS_DIR}\\CustomItemDetector.txt", "+w")
+    file.write("")
+    file.close()
+    file1 = open(f"{SETTINGS_DIR}\\CustomItemDetector.txt", "+a")
+    for item in customitems:
+        file1.write(f"{item}\n")
+    file1.close()
+    
+    print(f"Added {args.item} to the list")
+    return None
+
+AddCustomItemToTrack.add_argument("item", help="The string to search for in the item name")
+
+@command("deletecustomitem", description="Remove a string from the custom item detector list")
+def DeleteCustomItemToTrack(args: Namespace) -> None:
+    global customitems
+    if str(args.item) in customitems:
+        customitems.remove(str(args.item))
+        file = open(f"{SETTINGS_DIR}\\CustomItemDetector.txt", "+w")
+        file.write("")
+        file.close()
+        file1 = open(f"{SETTINGS_DIR}\\CustomItemDetector.txt", "+a")
+        for item in customitems:
+            file1.write(f"{item}\n")
+        file1.close()
+        print(f"Removed {args.item} form the list")
+    return None
+
+DeleteCustomItemToTrack.add_argument("item", help="the string to remove")
+
+@command("listcustomitems", description="Print out everything in the custom tracked items")
+def ListCustomItems(args: Namespace) -> None:
+    global customitems
+    for item in customitems:
+        print(item)
+    return None
+
+def Enable() -> None:
+    global customitems
+    if not os.path.isfile(f"{SETTINGS_DIR}\\CustomItemDetector.txt"):
+        file = open(f"{SETTINGS_DIR}\\CustomItemDetector.txt", "+a")
+        file.close()
+    else:
+        file = open(f"{SETTINGS_DIR}\\CustomItemDetector.txt", "+r")
+        for line in file.readlines():
+            customitems.append(line.strip("\n"))
+        file.close()
+    return None
+
+build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, CustomItemDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TimeOfDayOptions])
