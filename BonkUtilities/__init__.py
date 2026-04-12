@@ -2,7 +2,7 @@ import unrealsdk
 from typing import TypedDict
 from mods_base import keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption, NestedOption, command
 from unrealsdk.hooks import Type, Block
-from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction
+from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction, UStruct
 from .maps import *
 from .commands import *
 import os, json
@@ -24,10 +24,11 @@ NoclipSpeed: SliderOption = SliderOption("Noclip Speed", 5000, 500, 12000, 1, Tr
 MsgDisplayTime: SliderOption = SliderOption("Top Screen Message Time", 3.5, 0, 5, 0.1, False)
 UseHLQNoclip: BoolOption = BoolOption("Use HLQ Noclip", True, "Yes", "No")
 DesiredFPS: SliderOption = SliderOption("Desired FPS", 120, 30, 1024, 1, True, on_change = lambda _, new_value: setFPS(_, new_value))
-MapforTravel: DropdownOption = DropdownOption("Map for Travel Keybind", "arid_p", maps.maplist)
+MapforTravel: DropdownOption = DropdownOption("Map for Travel Keybind", "Arid Badlands", maps.mapnamelist)
 PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off", description="Displays a message on screen whenever a pearl drops from an enemy or spawns in a chest")
 EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On", "Off", description="Displays a message on screen whenever a rare eridian item drops from an enemy or spawns in a chest")
 HybridDetector: BoolOption = BoolOption("Hybrid Detector", False, "On", "Off", description="Displays a message on screen whenever a hybrid weapon drops from an enemy or spawns in a chest, this WILL destroy any sense of childlike wonder/mystery/suspense you felt checking each drop to see if its the one.")
+KnoxxComDetector: BoolOption = BoolOption("Knoxx Com Detector", True, "On", "Off", description="Display a message on screen when a loyalty/dlc3 com drops")
 CustomItemDetector: BoolOption = BoolOption("Custom Item Detector", False, "On", "Off", description="Use the custom item detector list to check for drops, controlled via console commands")
 ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
@@ -134,6 +135,32 @@ def displaymessage(message: str) -> None:
     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, message, MsgDisplayTime.value, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
     return None
 
+def GetColor(color: UStruct) -> str:
+    colorstr: str = ""
+    if int(color.R) == 0:
+        colorstr += "00"
+    else:
+        colorstr += str(hex(int(color.R))).strip("0x")
+    if int(color.G) == 0:
+        colorstr += "00"
+    else:
+        colorstr += str(hex(int(color.G))).strip("0x")
+    if int(color.B) == 0:
+        colorstr += "00"
+    else:
+        colorstr += str(hex(int(color.B))).strip("0x")
+    return colorstr
+
+def GetRarityColor(rarity: int) -> str:
+    theglobals: UObject = unrealsdk.find_object("GlobalsDefinition", "gd_globals.General.Globals")
+    color = None
+    for raritytype in theglobals.RarityLevelColors:
+        if rarity >= raritytype.MinLevel and rarity <= raritytype.MaxLevel:
+            color = raritytype.Color
+            break
+    if color == None:
+        return "000000"
+    return GetColor(color)
 
 @keybind(identifier="Godmode", key=None, event_filter=EInputEvent.IE_Pressed)
 def doGodmode():
@@ -345,7 +372,7 @@ def doPhasejump():
 
 @keybind(identifier="Travel to Selected Map", key=None, event_filter=EInputEvent.IE_Pressed)
 def doTravel():
-    get_pc().ConsoleCommand(f"openl {MapforTravel.value}")
+    get_pc().ConsoleCommand(f"openl {maps.maplist[maps.mapnamelist.index(MapforTravel.value)]}")
 
 @keybind(identifier="Hold To Fast Forward", key=None, event_filter=None)
 def doFastForward(event: EInputEvent):
@@ -459,8 +486,13 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
         if CustomItemDetector.value == True:
             for item in customitems:
                 if item.lower() in str(obj.Inventory.GetShortHumanReadableName()).lower():
-                    get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#ef00fc\" size = \"28\">{item} Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+                    get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#{GetRarityColor(obj.InventoryRarityLevel)}\" size = \"20\">{obj.Inventory.GetShortHumanReadableName()} Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
                     get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
+        if KnoxxComDetector.value == True:
+            if obj.Inventory.GetCategoryKey() == "Comm":
+                if "loyalty" in str(obj.Inventory.DefinitionData.ItemDefinition).lower() or str(obj.Inventory.DefinitionData.BalanceDefinition) in ("InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Truxican'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Specter'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Ogre'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Marine'"):
+                    get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#{GetRarityColor(obj.InventoryRarityLevel)}\" size = \"24\">Knoxx Com Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+                    get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Objectives_CompletedCue"), False)
 
             # im kinda sorry for the following war crime. (apparently not really cuz i never changed it lol)
 
