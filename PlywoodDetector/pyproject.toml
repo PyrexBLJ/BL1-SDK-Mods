@@ -1,0 +1,12 @@
+[project]
+name = "PlywoodDetector"
+version = "1.0.0"
+authors = [{ name = "Pyrex" }]
+description = "There be plywood among us."
+
+[tool.sdkmod]
+name = "Plywood Detector"
+license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
+supported_games = ["BL1"]
+download = "https://github.com/PyrexBLJ/BL1-SDK-Mods/raw/refs/heads/main/PlywoodDetector/PlywoodDetector.sdkmod"
+version = "1.0.0"
