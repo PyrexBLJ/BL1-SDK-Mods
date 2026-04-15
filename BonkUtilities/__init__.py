@@ -30,6 +30,7 @@ EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On
 HybridDetector: BoolOption = BoolOption("Hybrid Detector", False, "On", "Off", description="Displays a message on screen whenever a hybrid weapon drops from an enemy or spawns in a chest, this WILL destroy any sense of childlike wonder/mystery/suspense you felt checking each drop to see if its the one.")
 KnoxxComDetector: BoolOption = BoolOption("Knoxx Com Detector", True, "On", "Off", description="Display a message on screen when a loyalty/dlc3 com drops")
 CustomItemDetector: BoolOption = BoolOption("Custom Item Detector", False, "On", "Off", description="Use the custom item detector list to check for drops, controlled via console commands")
+DetectorDetector: BoolOption = BoolOption("Detector Detector", False, "Yea", "Nah", description="The detector detector exists to detect when a detector detects a drop you want to be detected, then notifies you a detected drop was detected with a detector detected detector notification.")
 ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
@@ -570,6 +571,16 @@ def pawnDied(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunct
                 file2.close()
     return None
 
+@hook(hook_func="WillowGame.WillowHUDGFxMovie:AddCriticalText", hook_type=Type.PRE)
+def DetectDetector(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
+    if DetectorDetector.value == True:
+        string: str = "<font color = \"#fcbd02\" size = \"32\">Detector Detected!</font>"
+        if str(__args.MessageString) == string:
+            return None
+        if "detected" in str(__args.MessageString).lower() or str(__args.MessageString) == "<font color=\"#ffadad\" size=\"32\">H</font><font color=\"#ffd6a5\" size=\"32\">y</font><font color=\"#fdffb6\" size=\"32\">b</font><font color=\"#caffbf\" size=\"32\">r</font><font color=\"#9bf6ff\" size=\"32\">i</font><font color=\"#a0c4ff\" size=\"32\">d</font> <font color=\"#bdb2ff\" size=\"32\">D</font><font color=\"#ffc6ff\" size=\"32\">r</font><font color=\"#ffadad\" size=\"32\">o</font><font color=\"#ffd6a5\" size=\"32\">p</font> <font color=\"#fdffb6\" size=\"32\">D</font><font color=\"#caffbf\" size=\"32\">e</font><font color=\"#9bf6ff\" size=\"32\">t</font><font color=\"#a0c4ff\" size=\"32\">e</font><font color=\"#bdb2ff\" size=\"32\">c</font><font color=\"#ffc6ff\" size=\"32\">t</font><font color=\"#ffadad\" size=\"32\">e</font><font color=\"#ffd6a5\" size=\"32\">d</font><font color=\"#fdffb6\" size=\"32\">!</font>":
+            get_pc().myHUD.GetHUDMovie().AddCriticalText(0, string, 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
+    return None
+
 @hook("WillowGame.WillowInteractiveObject:UseObject", Type.POST_UNCONDITIONAL)
 def useobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> None:
     if LogAwesomeLevels.value == True:
@@ -630,4 +641,4 @@ def Enable() -> None:
         file.close()
     return None
 
-build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, KnoxxComDetector, CustomItemDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TimeOfDayOptions])
+build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, KnoxxComDetector, CustomItemDetector, DetectorDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TimeOfDayOptions])
