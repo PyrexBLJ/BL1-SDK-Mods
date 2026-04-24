@@ -28,6 +28,7 @@ MapforTravel: DropdownOption = DropdownOption("Map for Travel Keybind", "Arid Ba
 PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off", description="Displays a message on screen whenever a pearl drops from an enemy or spawns in a chest")
 EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On", "Off", description="Displays a message on screen whenever a rare eridian item drops from an enemy or spawns in a chest")
 HybridDetector: BoolOption = BoolOption("Hybrid Detector", False, "On", "Off", description="Displays a message on screen whenever a hybrid weapon drops from an enemy or spawns in a chest, this WILL destroy any sense of childlike wonder/mystery/suspense you felt checking each drop to see if its the one.")
+AllowNemvader: BoolOption = BoolOption("Include Nemvader in Hybrid Detector", False, "Yes", "No", description="Turn this on to let the hybrid detector detect nemvader drops, leave it off to keep the mystery")
 KnoxxComDetector: BoolOption = BoolOption("Knoxx Com Detector", True, "On", "Off", description="Display a message on screen when a loyalty/dlc3 com drops")
 CustomItemDetector: BoolOption = BoolOption("Custom Item Detector", False, "On", "Off", description="Use the custom item detector list to check for drops, controlled via console commands")
 DetectorDetector: BoolOption = BoolOption("Detector Detector", False, "Yea", "Nah", description="The detector detector exists to detect when a detector detects a drop you want to be detected, then notifies you a detected drop was detected with a detector detected detector notification.")
@@ -38,6 +39,7 @@ CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "On", "Off", des
 HoldFFSpeed: SliderOption = SliderOption("Hold To Fast Forward Speed", 16, 0.1, 64, 0.1, False, description="This can also slow the game down if you want")
 DisableBlueTunnel: BoolOption = BoolOption("Disable Blue Tunnel", True, "Yes", "No")
 LogAwesomeLevels: BoolOption = BoolOption("Log Awesome levels to Console", False, "Yes", "No", description="Print out the level/gamestage/awesomelevel of enemies and interactive objects on kill or use")
+AutoPickup: BoolOption = BoolOption("Money & Ammo Auto Pickup", True, "Yes", "No")
 TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
 
 
@@ -447,7 +449,7 @@ def detectHybrid(item: UObject) -> bool:
         return True
     elif "CustomWeap_RocketLauncher_TheRoaster" in str(item.DefinitionData.BalanceDefinition) and "barrel2_Maliwan_Rhino" in str(item.DefinitionData.BarrelPartDefinition):
         return True
-    elif "CustomWeap_Repeater_HyperionNemesis" in str(item.DefinitionData.BalanceDefinition) and "sight5_Hyperion_Invader" in str(item.DefinitionData.SightPartDefinition):
+    elif "CustomWeap_Repeater_HyperionNemesis" in str(item.DefinitionData.BalanceDefinition) and "sight5_Hyperion_Invader" in str(item.DefinitionData.SightPartDefinition) and AllowNemvader.value == True:
         return True
     elif "CustomWeap_CombatShotgun_TKsWave" in str(item.DefinitionData.BalanceDefinition) and "mag2_Dahl_Bulldog" in str(item.DefinitionData.MagazinePartDefinition):
         return True
@@ -494,6 +496,10 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
                 if "loyalty" in str(obj.Inventory.DefinitionData.ItemDefinition).lower() or str(obj.Inventory.DefinitionData.BalanceDefinition) in ("InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Truxican'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Specter'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Ogre'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Marine'"):
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#{GetRarityColor(obj.InventoryRarityLevel)}\" size = \"24\">Knoxx Com Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
                     get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Objectives_CompletedCue"), False)
+        if AutoPickup.value == True:
+            if "ammo" in obj.Inventory.GetCategoryKey().lower() or "money" in obj.Inventory.GetCategoryKey().lower() or "instahealth" in obj.Inventory.GetCategoryKey().lower() or "grenade" in obj.Inventory.GetCategoryKey().lower():
+                if obj.Inventory.CanBeUsedBy(get_pc().Pawn):
+                    obj.Components[1].SetCylinderSize(350, 350)
 
             # im kinda sorry for the following war crime. (apparently not really cuz i never changed it lol)
 
@@ -585,8 +591,23 @@ def DetectDetector(obj: UObject, __args: WrappedStruct, __ret: any, __func: Boun
 def useobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> None:
     if LogAwesomeLevels.value == True:
         print(f"{obj.InteractiveObjectDefinition.Name}: GameStage: {obj.GameStage} AwesomeLevel: {obj.AwesomeLevel}")
+
+    if AutoPickup.value == True:
+        for item in obj.Attached:
+            if "pawn" not in str(item).lower():
+                if "ammo" in item.Inventory.GetCategoryKey().lower() or "money" in item.Inventory.GetCategoryKey().lower() or "instahealth" in item.Inventory.GetCategoryKey().lower() or "grenade" in item.Inventory.GetCategoryKey().lower():
+                    if item.Inventory.CanBeUsedBy(get_pc().Pawn):
+                        get_pc().TouchedPickupable(item)
     return None
 
+@hook("WillowGame.WillowPlayerController:TouchedPickupable", Type.POST)
+def touchPickup(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> None:
+    if AutoPickup.value == True:
+        if args.Pickup.Inventory != None:
+            if "ammo" in args.Pickup.Inventory.GetCategoryKey().lower() or "money" in args.Pickup.Inventory.GetCategoryKey().lower() or "instahealth" in args.Pickup.Inventory.GetCategoryKey().lower() or "grenade" in args.Pickup.Inventory.GetCategoryKey().lower():
+                if args.Pickup.Inventory.CanBeUsedBy(get_pc().Pawn):
+                    args.Pickup.Inventory.DefinitionData.ItemDefinition.bAutomaticallyPickup = True
+    return None
 
 @command("addcustomitem", description="Add a string to the custom item detector list")
 def AddCustomItemToTrack(args: Namespace) -> None:
@@ -641,4 +662,4 @@ def Enable() -> None:
         file.close()
     return None
 
-build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, KnoxxComDetector, CustomItemDetector, DetectorDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TimeOfDayOptions])
+build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, KnoxxComDetector, CustomItemDetector, DetectorDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, AutoPickup, TimeOfDayOptions])
