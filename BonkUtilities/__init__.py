@@ -32,6 +32,7 @@ AllowNemvader: BoolOption = BoolOption("Include Nemvader in Hybrid Detector", Fa
 KnoxxComDetector: BoolOption = BoolOption("Knoxx Com Detector", True, "On", "Off", description="Display a message on screen when a loyalty/dlc3 com drops")
 CustomItemDetector: BoolOption = BoolOption("Custom Item Detector", False, "On", "Off", description="Use the custom item detector list to check for drops, controlled via console commands")
 DetectorDetector: BoolOption = BoolOption("Detector Detector", False, "Yea", "Nah", description="The detector detector exists to detect when a detector detects a drop you want to be detected, then notifies you a detected drop was detected with a detector detected detector notification.")
+DetectorVolume: SliderOption = SliderOption("Detector Volume", 2.5, 0.0, 10.0, 0.1, False)
 ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
@@ -39,6 +40,7 @@ CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "On", "Off", des
 HoldFFSpeed: SliderOption = SliderOption("Hold To Fast Forward Speed", 16, 0.1, 64, 0.1, False, description="This can also slow the game down if you want")
 DisableBlueTunnel: BoolOption = BoolOption("Disable Blue Tunnel", True, "Yes", "No")
 LogAwesomeLevels: BoolOption = BoolOption("Log Awesome levels to Console", False, "Yes", "No", description="Print out the level/gamestage/awesomelevel of enemies and interactive objects on kill or use")
+TrackLanceChests: BoolOption = BoolOption("Track Opened Lance Chests", True, "Yes", "No", description="Count how many lance chests you open, saved in a sdk_mods/settings/lancechests.txt file")
 AutoPickup: BoolOption = BoolOption("Money & Ammo Auto Pickup", True, "Yes", "No")
 TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
 
@@ -463,6 +465,16 @@ def detectHybrid(item: UObject) -> bool:
         return True
     return False
 
+def GetDetectorSound(wantedcue: str) -> UObject:
+    if wantedcue == "UI_Accept_RewardCue":
+        rewardcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Detector_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"))
+        rewardcue.VolumeMultiplier = float(DetectorVolume.value)
+        return rewardcue
+    elif wantedcue == "UI_Objectives_CompletedCue":
+        completedcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Completed_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Objectives_CompletedCue"))
+        completedcue.VolumeMultiplier = float(DetectorVolume.value)
+        return completedcue
+
 # 101-169 pearl rarity
 @hook(hook_func="WillowGame.WillowPickup:InitializeFromInventory", hook_type=Type.POST)
 def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunction) -> None:
@@ -476,26 +488,26 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
             if itemname[1] in ("Eridian Stampeding Spatter Gun", "Mega Cannon", "Eridian Firebomb", "Eridian Fireball", "Eridian Rolling Spatter Gun", "Eridian Splat Gun"):
                 if EridianDetector.value == True:
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#fc9d05\" size = \"32\">Rare Eridian Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-                    get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
+                    get_pc().PlaySound(GetDetectorSound("UI_Accept_RewardCue"), False)
         if HybridDetector.value == True:
             if "WillowWeapon" in str(obj.Inventory):
                 if detectHybrid(obj.Inventory) == True:
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color=\"#ffadad\" size=\"32\">H</font><font color=\"#ffd6a5\" size=\"32\">y</font><font color=\"#fdffb6\" size=\"32\">b</font><font color=\"#caffbf\" size=\"32\">r</font><font color=\"#9bf6ff\" size=\"32\">i</font><font color=\"#a0c4ff\" size=\"32\">d</font> <font color=\"#bdb2ff\" size=\"32\">D</font><font color=\"#ffc6ff\" size=\"32\">r</font><font color=\"#ffadad\" size=\"32\">o</font><font color=\"#ffd6a5\" size=\"32\">p</font> <font color=\"#fdffb6\" size=\"32\">D</font><font color=\"#caffbf\" size=\"32\">e</font><font color=\"#9bf6ff\" size=\"32\">t</font><font color=\"#a0c4ff\" size=\"32\">e</font><font color=\"#bdb2ff\" size=\"32\">c</font><font color=\"#ffc6ff\" size=\"32\">t</font><font color=\"#ffadad\" size=\"32\">e</font><font color=\"#ffd6a5\" size=\"32\">d</font><font color=\"#fdffb6\" size=\"32\">!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI) # if this works its gonna look so fuckin cool
-                    get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
+                    get_pc().PlaySound(GetDetectorSound("UI_Accept_RewardCue"), False)
         if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170:
             if PearlDetector.value == True:
                 get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-                get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
+                get_pc().PlaySound(GetDetectorSound("UI_Accept_RewardCue"), False)
         if CustomItemDetector.value == True:
             for item in customitems:
                 if item.lower() in str(obj.Inventory.GetShortHumanReadableName()).lower():
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#{GetRarityColor(obj.InventoryRarityLevel)}\" size = \"20\">{obj.Inventory.GetShortHumanReadableName()} Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-                    get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"), False)
+                    get_pc().PlaySound(GetDetectorSound("UI_Accept_RewardCue"), False)
         if KnoxxComDetector.value == True:
             if obj.Inventory.GetCategoryKey() == "Comm":
                 if "loyalty" in str(obj.Inventory.DefinitionData.ItemDefinition).lower() or str(obj.Inventory.DefinitionData.BalanceDefinition) in ("InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Truxican'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Specter'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Ogre'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Marine'"):
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#{GetRarityColor(obj.InventoryRarityLevel)}\" size = \"24\">Knoxx Com Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-                    get_pc().PlaySound(unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Objectives_CompletedCue"), False)
+                    get_pc().PlaySound(GetDetectorSound("UI_Objectives_CompletedCue"), False)
         if AutoPickup.value == True:
             if "ammo" in obj.Inventory.GetCategoryKey().lower() or "money" in obj.Inventory.GetCategoryKey().lower() or "instahealth" in obj.Inventory.GetCategoryKey().lower() or "grenade" in obj.Inventory.GetCategoryKey().lower():
                 if obj.Inventory.CanBeUsedBy(get_pc().Pawn):
@@ -592,6 +604,16 @@ def useobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) 
     if LogAwesomeLevels.value == True:
         print(f"{obj.InteractiveObjectDefinition.Name}: GameStage: {obj.GameStage} AwesomeLevel: {obj.AwesomeLevel}")
 
+    if TrackLanceChests.value == True and str(obj.InteractiveObjectDefinition) == "InteractiveObjectDefinition'DLC3_gd_Balance_Treasure.InteractiveObjects.InteractiveObj_crimson_Chest'":
+        file = open(f"{SETTINGS_DIR}\\lancechests.txt", "+r")
+        numofopens: int = 0
+        numofopens = int(file.read())
+        numofopens += 1
+        file.seek(0)
+        file.write(str(numofopens))
+        file.truncate()
+        file.close()
+
     if AutoPickup.value == True:
         for item in obj.Attached:
             if "pawn" not in str(item).lower():
@@ -652,6 +674,10 @@ def ListCustomItems(args: Namespace) -> None:
 
 def Enable() -> None:
     global customitems
+    if not os.path.isfile(f"{SETTINGS_DIR}\\lancechests.txt"):
+        file = open(f"{SETTINGS_DIR}\\lancechests.txt", "+a")
+        file.write("0")
+        file.close()
     if not os.path.isfile(f"{SETTINGS_DIR}\\CustomItemDetector.txt"):
         file = open(f"{SETTINGS_DIR}\\CustomItemDetector.txt", "+a")
         file.close()
@@ -662,4 +688,4 @@ def Enable() -> None:
         file.close()
     return None
 
-build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, KnoxxComDetector, CustomItemDetector, DetectorDetector, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, AutoPickup, TimeOfDayOptions])
+build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])

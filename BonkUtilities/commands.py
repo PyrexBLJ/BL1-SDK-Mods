@@ -4,7 +4,7 @@ from mods_base.settings import SETTINGS_DIR
 
 @command("buhelp", description="Lists available commands from bonk utilities")
 def BUHelp(args: Namespace) -> None:
-    print("Commands:\n\ndropitem [pool] [amount]\ncrawkills [kill count]\npearlcount [drop count]\nlastpearl [run number]\naddcustomitem [string to search for]\ndeletecustomitem [string to remove]\nlistcustomitems")
+    print("Commands:\n\ndropitem [pool] [amount]\ncrawkills [kill count]\npearlcount [drop count]\nlastpearl [run number]\naddcustomitem [string to search for]\ndeletecustomitem [string to remove]\nlistcustomitems\nsetlancechests [number of chests]")
     return None
 
 @command("dropitem", description="spawns the specified number of items from a loot pool: spawnitem pool amount")
@@ -48,3 +48,12 @@ def lastPearl(args: Namespace) -> None:
     return None
         
 lastPearl.add_argument("runnumber", help="the run you got the drop on")
+
+@command("setlancechests", description="Set the number of opened lance chests for the lance chest tracker")
+def SetLanceChests(args: Namespace) -> None:
+    file = open(f"{SETTINGS_DIR}\\lancechests.txt", "+w")
+    file.write(str(args.numberofchests))
+    file.close()
+    return None
+
+SetLanceChests.add_argument("numberofchests", help="the value to set the tracker to")

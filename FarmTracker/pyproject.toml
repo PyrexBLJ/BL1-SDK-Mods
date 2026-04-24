@@ -1,12 +1,12 @@
 [project]
 name = "Farm Tracker"
-version = "1.0.2"
+version = "1.0.3"
 authors = [{ name = "Pyrex" }]
-description = "Item, kill and interactive object use tracker for use in mainly OBS. Nothing is shown on screen in game."
+description = "Commands:\nfarmhelp\nnewfarm [name]\nlistfarms\nsavefarm\nloadfarm [name from listfarms]\ntrackitem [item name]\nsetenemy [enemy name]\nsetkills [kills of tracked enemy]\nsetitemcount [drops of tracked item]\nsetlegendaries [legendary drops]\nsetpearls [pearl drops]\nwherefarm"
 
 [tool.sdkmod]
 name = "Farm Tracker"
 license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
 supported_games = ["BL1"]
 download = "https://github.com/PyrexBLJ/BL1-SDK-Mods/raw/refs/heads/main/FarmTracker/FarmTracker.sdkmod"
-version = "1.0.2"
+version = "1.0.3"
