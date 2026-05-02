@@ -513,8 +513,8 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
                 if obj.Inventory.CanBeUsedBy(get_pc().Pawn):
                     obj.Components[1].SetCylinderSize(350, 350)
 
-            # im kinda sorry for the following war crime. (apparently not really cuz i never changed it lol)
-
+        # im kinda sorry for the following war crime. (apparently not really cuz i never changed it lol)
+        if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170:
             if CrawTracker.value == True:
                 if get_pc().GetInventoryPawn() == None:
                     return None
@@ -688,4 +688,4 @@ def Enable() -> None:
         file.close()
     return None
 
-build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])
+build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])
