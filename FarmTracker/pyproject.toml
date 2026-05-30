@@ -1,5 +1,5 @@
 [project]
-name = "Farm Tracker"
+name = "FarmTracker"
 version = "1.0.3"
 authors = [{ name = "Pyrex" }]
 description = "Commands:\nfarmhelp\nnewfarm [name]\nlistfarms\nsavefarm\nloadfarm [name from listfarms]\ntrackitem [item name]\nsetenemy [enemy name]\nsetkills [kills of tracked enemy]\nsetitemcount [drops of tracked item]\nsetlegendaries [legendary drops]\nsetpearls [pearl drops]\nwherefarm"
