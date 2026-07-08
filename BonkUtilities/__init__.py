@@ -228,7 +228,7 @@ def doSaveLocation():
     global savedlocations, saveslot
     thismapsindex: int = -1
     for mapindex in savedlocations:
-        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == savedlocations[savedlocations.index(mapindex)]["map"]:
+        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == str(savedlocations[savedlocations.index(mapindex)]["map"]).lower():
             thismapsindex = savedlocations.index(mapindex)
     
     if thismapsindex != -1:
@@ -250,7 +250,7 @@ def doLoadLocation():
     global savedlocations, saveslot
     thismapsindex: int = -1
     for mapindex in savedlocations:
-        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == savedlocations[savedlocations.index(mapindex)]["map"]:
+        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == str(savedlocations[savedlocations.index(mapindex)]["map"]).lower():
             thismapsindex = savedlocations.index(mapindex)
     if thismapsindex == -1:
         displaymessage("Could not find this map in the list, error")

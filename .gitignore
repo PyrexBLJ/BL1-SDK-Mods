@@ -1,3 +1,4 @@
 *.sh
 __pycache__/
 SpeedrunTestSuite/
+LanceTracker/
