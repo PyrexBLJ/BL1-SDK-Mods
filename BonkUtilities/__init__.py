@@ -463,6 +463,8 @@ def detectHybrid(item: UObject) -> bool:
         return True
     elif "CustomWeap_SemiAutoSniper_KyrosPower" in str(item.DefinitionData.BalanceDefinition) and "sight5_Atlas_Cyclops" in str(item.DefinitionData.SightPartDefinition):
         return True
+    elif "CustomWeap_Repeater_KnoxsGold" in str(item.DefinitionData.BalanceDefinition) and "acc4_DoubleShot" in str(item.DefinitionData.AccessoryPartDefinition):
+        return True
     return False
 
 def GetDetectorSound(wantedcue: str) -> UObject:
@@ -616,7 +618,7 @@ def useobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) 
 
     if AutoPickup.value == True:
         for item in obj.Attached:
-            if "pawn" not in str(item).lower():
+            if "pawn" not in str(item).lower() and "interpactor" not in str(item).lower():
                 if "ammo" in item.Inventory.GetCategoryKey().lower() or "money" in item.Inventory.GetCategoryKey().lower() or "instahealth" in item.Inventory.GetCategoryKey().lower() or "grenade" in item.Inventory.GetCategoryKey().lower():
                     if item.Inventory.CanBeUsedBy(get_pc().Pawn):
                         get_pc().TouchedPickupable(item)
