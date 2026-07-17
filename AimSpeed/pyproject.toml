@@ -7,6 +7,6 @@ description = "Fine Tune Aimed in Sensitivity."
 [tool.sdkmod]
 name = "Sensitivity Settings"
 license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
-supported_games = ["BL1"]
+supported_games = ["BL1", "BL1E"]
 download = "https://github.com/PyrexBLJ/BL1-SDK-Mods/raw/refs/heads/main/AimSpeed/AimSpeed.sdkmod"
 version = "1.0.0"

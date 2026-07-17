@@ -1,6 +1,6 @@
 import unrealsdk
 from typing import TypedDict
-from mods_base import keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption, NestedOption, command
+from mods_base import keybind, EInputEvent, get_pc, build_mod, ENGINE, hook, SliderOption, SETTINGS_DIR, BoolOption, DropdownOption, NestedOption, command, Game
 from unrealsdk.hooks import Type, Block
 from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction, UStruct
 from .maps import *
@@ -23,7 +23,7 @@ FOV: SliderOption = SliderOption("FOV", 110, 65, 180, 1, True)
 NoclipSpeed: SliderOption = SliderOption("Noclip Speed", 5000, 500, 12000, 1, True)
 MsgDisplayTime: SliderOption = SliderOption("Top Screen Message Time", 3.5, 0, 5, 0.1, False)
 UseHLQNoclip: BoolOption = BoolOption("Use HLQ Noclip", True, "Yes", "No")
-DesiredFPS: SliderOption = SliderOption("Desired FPS", 120, 30, 1024, 1, True, on_change = lambda _, new_value: setFPS(_, new_value))
+DesiredFPS: SliderOption = SliderOption("Desired FPS", 120, 30, 1024, 1, True, on_change_while_enabled = lambda _, new_value: setFPS(_, new_value))
 MapforTravel: DropdownOption = DropdownOption("Map for Travel Keybind", "Arid Badlands", maps.mapnamelist)
 PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off", description="Displays a message on screen whenever a pearl drops from an enemy or spawns in a chest")
 EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On", "Off", description="Displays a message on screen whenever a rare eridian item drops from an enemy or spawns in a chest")
@@ -33,16 +33,18 @@ KnoxxComDetector: BoolOption = BoolOption("Knoxx Com Detector", True, "On", "Off
 CustomItemDetector: BoolOption = BoolOption("Custom Item Detector", False, "On", "Off", description="Use the custom item detector list to check for drops, controlled via console commands")
 DetectorDetector: BoolOption = BoolOption("Detector Detector", False, "Yea", "Nah", description="The detector detector exists to detect when a detector detects a drop you want to be detected, then notifies you a detected drop was detected with a detector detected detector notification.")
 DetectorVolume: SliderOption = SliderOption("Detector Volume", 2.5, 0.0, 10.0, 0.1, False)
-ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change = lambda _, new_value: mainTODToggle(_, new_value))
-DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change = lambda _, new_value: changeTOD(_, new_value))
-TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change = lambda _, new_value: setTODRate(_, new_value))
-CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "On", "Off", description="Tracks Craw kills, pearl drops, drop odds and the last run where u got a pearl. dumps all of these values into separate text files. Manual counter override commands: crawkills [kills], pearlcount [pearl count], lastpearl [last run where you got a pearl]", on_change = lambda _, new_value: crawTrackerToggle(_, new_value))
+ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change_while_enabled = lambda _, new_value: mainTODToggle(_, new_value))
+DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change_while_enabled = lambda _, new_value: changeTOD(_, new_value))
+TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change_while_enabled = lambda _, new_value: setTODRate(_, new_value))
+CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "On", "Off", description="Tracks Craw kills, pearl drops, drop odds and the last run where u got a pearl. dumps all of these values into separate text files. Manual counter override commands: crawkills [kills], pearlcount [pearl count], lastpearl [last run where you got a pearl]", on_change_while_enabled = lambda _, new_value: crawTrackerToggle(_, new_value))
 HoldFFSpeed: SliderOption = SliderOption("Hold To Fast Forward Speed", 16, 0.1, 64, 0.1, False, description="This can also slow the game down if you want")
 DisableBlueTunnel: BoolOption = BoolOption("Disable Blue Tunnel", True, "Yes", "No")
 LogAwesomeLevels: BoolOption = BoolOption("Log Awesome levels to Console", False, "Yes", "No", description="Print out the level/gamestage/awesomelevel of enemies and interactive objects on kill or use")
 TrackLanceChests: BoolOption = BoolOption("Track Opened Lance Chests", True, "Yes", "No", description="Count how many lance chests you open, saved in a sdk_mods/settings/lancechests.txt file")
 AutoPickup: BoolOption = BoolOption("Money & Ammo Auto Pickup", True, "Yes", "No")
 TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
+if Game.get_current() == Game.BL1E:
+    DisableQuitToDesktop: BoolOption = BoolOption("Disable Quit To Desktop", True, "Yes", "No")
 
 
 class location(TypedDict):
@@ -271,7 +273,7 @@ def increaseLocationSlot() -> None:
     global saveslot
     thismapsindex: int = -1
     for mapindex in savedlocations:
-        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == savedlocations[savedlocations.index(mapindex)]["map"]:
+        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == str(savedlocations[savedlocations.index(mapindex)]["map"]).lower():
             thismapsindex = savedlocations.index(mapindex)
     
     saveslot += 1
@@ -286,7 +288,7 @@ def decreaseLocationSlot() -> None:
     global saveslot
     thismapsindex: int = -1
     for mapindex in savedlocations:
-        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == savedlocations[savedlocations.index(mapindex)]["map"]:
+        if str(ENGINE.GetCurrentWorldInfo().CommittedPersistentLevelName).lower() == str(savedlocations[savedlocations.index(mapindex)]["map"]).lower():
             thismapsindex = savedlocations.index(mapindex)
 
     saveslot -= 1
@@ -633,6 +635,13 @@ def touchPickup(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction
                     args.Pickup.Inventory.DefinitionData.ItemDefinition.bAutomaticallyPickup = True
     return None
 
+if Game.get_current() == Game.BL1E:
+    @hook("WillowGame.WillowGFxLobbyTools:menuAddItem", Type.PRE)
+    def menuAddItemHook(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> type[Block] | None:
+        if DisableQuitToDesktop.value == True and args.menuCaption == "$WillowMenu.Pause.QuitPC":
+            return Block
+        return None
+
 @command("addcustomitem", description="Add a string to the custom item detector list")
 def AddCustomItemToTrack(args: Namespace) -> None:
     global customitems
@@ -690,4 +699,7 @@ def Enable() -> None:
         file.close()
     return None
 
-build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])
+if Game.get_current() == Game.BL1E:
+    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, DisableQuitToDesktop, TimeOfDayOptions])
+else:
+    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])

@@ -4,7 +4,7 @@ from unrealsdk.hooks import Type #type: ignore
 from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction #type: ignore
 from typing import Any
 
-FakePlayers: SliderOption = SliderOption("Number of Players", 4, 1, 4, 1, True, description="The number of players to fake in the game", on_change = lambda _, new_value: setPlayers(_, new_value))
+FakePlayers: SliderOption = SliderOption("Number of Players", 4, 1, 4, 1, True, description="The number of players to fake in the game", on_change_while_enabled = lambda _, new_value: setPlayers(_, new_value))
 
 def setPlayers(_: SliderOption, new_value: int) -> None:
     ENGINE.GetCurrentWorldInfo().Game.EffectiveNumPlayers = int(new_value)
