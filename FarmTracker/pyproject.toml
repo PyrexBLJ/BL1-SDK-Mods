@@ -1,6 +1,6 @@
 [project]
 name = "FarmTracker"
-version = "1.0.3"
+version = "1.0.4"
 authors = [{ name = "Pyrex" }]
 description = "Commands:\nfarmhelp\nnewfarm [name]\nlistfarms\nsavefarm\nloadfarm [name from listfarms]\ntrackitem [item name]\nsetenemy [enemy name]\nsetkills [kills of tracked enemy]\nsetitemcount [drops of tracked item]\nsetlegendaries [legendary drops]\nsetpearls [pearl drops]\nwherefarm"
 
@@ -9,4 +9,4 @@ name = "Farm Tracker"
 license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
 supported_games = ["BL1", "BL1E"]
 download = "https://github.com/PyrexBLJ/BL1-SDK-Mods/raw/refs/heads/main/FarmTracker/FarmTracker.sdkmod"
-version = "1.0.3"
+version = "1.0.4"

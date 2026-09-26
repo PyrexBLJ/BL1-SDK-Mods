@@ -328,8 +328,16 @@ def doKillAll():
     for pawn in get_pc().ThePawnList.FullPawnList:
         if not pawn:
             continue
-        if pawn.Class.Name != "WillowPlayerPawn" and pawn.Allegiance not in ("gd_allegiance.Player.PlayerAllegiance", "gd_allegiance.Friendly.FriendlyAllegiance", "gd_allegiance.Settler.SettlerAllegiance"):
-            pawn.SetHealth(-1)
+        if pawn.bIsDead:
+            continue
+        if pawn.Class.Name != "WillowPlayerPawn" and pawn.Allegiance not in ("gd_allegiance.Player.PlayerAllegiance", "gd_allegiance.Friendly.FriendlyAllegiance", "gd_allegiance.Settler.SettlerAllegiance") and "NPC" not in str(pawn.ControllerTemplate) and "Loader.TheWorld:" in str(pawn):
+            if pawn.Base != None:
+                if pawn.Base.Class.Name == "WillowVehicle_WheeledVehicle":
+                    pawn.Base.BlowupVehicle()
+                else:
+                    pawn.SetHealth(-1)
+            else:
+                pawn.SetHealth(-1)
 
 @keybind(identifier="Delete Dropped Items", key=None, event_filter=EInputEvent.IE_Pressed)
 def doDeleteItems():
@@ -390,9 +398,12 @@ def doFastForward(event: EInputEvent):
 
 @keybind(identifier="Respawn Enemies", key=None, event_filter=EInputEvent.IE_Pressed, description="Some respawned enemies dont drop loot on death, namely craw")
 def doEnemyRespawn():
-    for den in unrealsdk.find_all("PopulationOpportunityDen")[1:]:
-        den.IsEnabled = True
-        den.RespawnKilledActors(1.0)
+    for thing in unrealsdk.find_all("PopulationMaster", exact=False)[-1].OpportunityList:
+        if thing.LoadedOpportunity != None:
+            if "den" in str(thing.LoadedOpportunity).lower():
+                thing.LoadedOpportunity.bNoRespawning = False
+                thing.LoadedOpportunity.IsEnabled = True
+                thing.LoadedOpportunity.RespawnKilledActors(1.0)
 
 @keybind(identifier="Reset Action Skill Cooldown", key=None, event_filter=EInputEvent.IE_Pressed)
 def doResetACCooldown():

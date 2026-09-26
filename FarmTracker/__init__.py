@@ -245,11 +245,12 @@ def killEnemy(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunc
     if obj.Class.Name == "WillowVehicle_WheeledVehicle":
         return None
     if obj.Class.Name != "WillowPlayerPawn":
-        if obj.BalanceDefinitionState.BalanceDefinition.Grades[0].GradeModifiers.DisplayName == currentfarm["enemyname"]:
-            currentfarm["enemykills"] += 1
-            setValue(f"{SETTINGS_DIR}\\FarmTracker\\TrackedEnemyKills.txt", currentfarm["enemykills"])
-            setValuestr(f"{SETTINGS_DIR}\\FarmTracker\\TrackedEnemyWithCount.txt", f"{currentfarm["enemyname"]}: {currentfarm["enemykills"]}")
-            save()
+        if obj.BalanceDefinitionState.BalanceDefinition != None:
+            if obj.BalanceDefinitionState.BalanceDefinition.Grades[0].GradeModifiers.DisplayName == currentfarm["enemyname"]:
+                currentfarm["enemykills"] += 1
+                setValue(f"{SETTINGS_DIR}\\FarmTracker\\TrackedEnemyKills.txt", currentfarm["enemykills"])
+                setValuestr(f"{SETTINGS_DIR}\\FarmTracker\\TrackedEnemyWithCount.txt", f"{currentfarm["enemyname"]}: {currentfarm["enemykills"]}")
+                save()
     return None
 
 @hook(hook_func="WillowGame.WillowPickup:InitializeFromInventory", hook_type=Type.POST)
