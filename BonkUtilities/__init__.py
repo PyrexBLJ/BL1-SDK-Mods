@@ -29,6 +29,7 @@ PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off",
 EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On", "Off", description="Displays a message on screen whenever a rare eridian item drops from an enemy or spawns in a chest")
 HybridDetector: BoolOption = BoolOption("Hybrid Detector", False, "On", "Off", description="Displays a message on screen whenever a hybrid weapon drops from an enemy or spawns in a chest, this WILL destroy any sense of childlike wonder/mystery/suspense you felt checking each drop to see if its the one.")
 AllowNemvader: BoolOption = BoolOption("Include Nemvader in Hybrid Detector", False, "Yes", "No", description="Turn this on to let the hybrid detector detect nemvader drops, leave it off to keep the mystery")
+AllowKnoxGemini: BoolOption = BoolOption("Include Knox Gemini in Hybrid Detector", False, "Yes", "No", description="Turn this on to let the hybrid detector detect knox gemini drops, leave it off because it was a dumb joke for a not real hybrid anyways")
 KnoxxComDetector: BoolOption = BoolOption("Knoxx Com Detector", True, "On", "Off", description="Display a message on screen when a loyalty/dlc3 com drops")
 CustomItemDetector: BoolOption = BoolOption("Custom Item Detector", False, "On", "Off", description="Use the custom item detector list to check for drops, controlled via console commands")
 DetectorDetector: BoolOption = BoolOption("Detector Detector", False, "Yea", "Nah", description="The detector detector exists to detect when a detector detects a drop you want to be detected, then notifies you a detected drop was detected with a detector detected detector notification.")
@@ -476,7 +477,7 @@ def detectHybrid(item: UObject) -> bool:
         return True
     elif "CustomWeap_SemiAutoSniper_KyrosPower" in str(item.DefinitionData.BalanceDefinition) and "sight5_Atlas_Cyclops" in str(item.DefinitionData.SightPartDefinition):
         return True
-    elif "CustomWeap_Repeater_KnoxsGold" in str(item.DefinitionData.BalanceDefinition) and "acc4_DoubleShot" in str(item.DefinitionData.AccessoryPartDefinition):
+    elif "CustomWeap_Repeater_KnoxsGold" in str(item.DefinitionData.BalanceDefinition) and "acc4_DoubleShot" in str(item.DefinitionData.AccessoryPartDefinition) and AllowKnoxGemini.value == True:
         return True
     return False
 
@@ -614,12 +615,9 @@ def DetectDetector(obj: UObject, __args: WrappedStruct, __ret: any, __func: Boun
             get_pc().myHUD.GetHUDMovie().AddCriticalText(0, string, 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
     return None
 
-@hook("WillowGame.WillowInteractiveObject:UseObject", Type.POST_UNCONDITIONAL)
+@hook("WillowGame.WillowInteractiveObject:UseObject", Type.PRE)
 def useobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> None:
-    if LogAwesomeLevels.value == True:
-        print(f"{obj.InteractiveObjectDefinition.Name}: GameStage: {obj.GameStage} AwesomeLevel: {obj.AwesomeLevel}")
-
-    if TrackLanceChests.value == True and str(obj.InteractiveObjectDefinition) == "InteractiveObjectDefinition'DLC3_gd_Balance_Treasure.InteractiveObjects.InteractiveObj_crimson_Chest'":
+    if TrackLanceChests.value == True and str(obj.InteractiveObjectDefinition.Name) == "InteractiveObj_crimson_Chest":
         file = open(f"{SETTINGS_DIR}\\lancechests.txt", "+r")
         numofopens: int = 0
         numofopens = int(file.read())
@@ -628,6 +626,12 @@ def useobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) 
         file.write(str(numofopens))
         file.truncate()
         file.close()
+    return None
+
+@hook("WillowGame.WillowInteractiveObject:UseObject", Type.POST_UNCONDITIONAL)
+def useobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> None:
+    if LogAwesomeLevels.value == True:
+        print(f"{obj.InteractiveObjectDefinition.Name}: GameStage: {obj.GameStage} AwesomeLevel: {obj.AwesomeLevel}")
 
     if AutoPickup.value == True:
         for item in obj.Attached:
