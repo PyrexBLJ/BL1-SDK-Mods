@@ -615,9 +615,14 @@ def DetectDetector(obj: UObject, __args: WrappedStruct, __ret: any, __func: Boun
             get_pc().myHUD.GetHUDMovie().AddCriticalText(0, string, 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
     return None
 
+lastchest = ""
 @hook("WillowGame.WillowInteractiveObject:UseObject", Type.PRE)
-def useobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> None:
-    if TrackLanceChests.value == True and str(obj.InteractiveObjectDefinition.Name) == "InteractiveObj_crimson_Chest":
+def preuseobject(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> None:
+    global lastchest
+    print(f"Interacted: {str(obj)}")
+    if TrackLanceChests.value == True and str(obj.InteractiveObjectDefinition.Name) == "InteractiveObj_crimson_Chest" and str(obj) != lastchest:
+        lastchest = str(obj)
+        print(f"Counted: {str(obj)}")
         file = open(f"{SETTINGS_DIR}\\lancechests.txt", "+r")
         numofopens: int = 0
         numofopens = int(file.read())
