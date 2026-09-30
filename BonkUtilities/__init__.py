@@ -715,6 +715,6 @@ def Enable() -> None:
     return None
 
 if Game.get_current() == Game.BL1E:
-    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, DisableQuitToDesktop, TimeOfDayOptions])
+    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, AllowKnoxGemini, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, DisableQuitToDesktop, TimeOfDayOptions])
 else:
-    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])
+    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, AllowKnoxGemini, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])
