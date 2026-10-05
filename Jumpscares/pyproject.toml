@@ -1,0 +1,12 @@
+[project]
+name = "Jumpscares"
+version = "1.0.0"
+authors = [{ name = "Pyrex" }]
+description = "1/10000 chance for a jumpscare to pop up every second"
+
+[tool.sdkmod]
+name = "Jumpscares"
+license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
+supported_games = ["BL1"]
+download = ""
+version = "1.0.0"

@@ -483,13 +483,29 @@ def detectHybrid(item: UObject) -> bool:
 
 def GetDetectorSound(wantedcue: str) -> UObject:
     if wantedcue == "UI_Accept_RewardCue":
-        rewardcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Detector_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"))
-        rewardcue.VolumeMultiplier = float(DetectorVolume.value)
-        return rewardcue
+        try:
+            sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_Detector_Sound_Cue")
+            return sound
+        except:
+            rewardcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Detector_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"))
+            rewardcue.VolumeMultiplier = float(DetectorVolume.value)
+            return rewardcue
     elif wantedcue == "UI_Objectives_CompletedCue":
-        completedcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Completed_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Objectives_CompletedCue"))
-        completedcue.VolumeMultiplier = float(DetectorVolume.value)
-        return completedcue
+        try:
+            sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_Completed_Sound_Cue")
+            return sound
+        except:
+            completedcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Completed_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Objectives_CompletedCue"))
+            completedcue.VolumeMultiplier = float(DetectorVolume.value)
+            return completedcue
+    elif wantedcue == "Menu_CloseCue":
+        try:
+            sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_MenuClose_Sound_Cue")
+            return sound
+        except:
+            completedcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_MenuClose_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.Menu_CloseCue"))
+            completedcue.VolumeMultiplier = float(DetectorVolume.value)
+            return completedcue
 
 # 101-169 pearl rarity
 @hook(hook_func="WillowGame.WillowPickup:InitializeFromInventory", hook_type=Type.POST)
@@ -518,7 +534,7 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
             for item in customitems:
                 if item.lower() in str(obj.Inventory.GetShortHumanReadableName()).lower():
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#{GetRarityColor(obj.InventoryRarityLevel)}\" size = \"20\">{obj.Inventory.GetShortHumanReadableName()} Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-                    get_pc().PlaySound(GetDetectorSound("UI_Accept_RewardCue"), False)
+                    get_pc().PlaySound(GetDetectorSound("Menu_CloseCue"), False)
         if KnoxxComDetector.value == True:
             if obj.Inventory.GetCategoryKey() == "Comm":
                 if "loyalty" in str(obj.Inventory.DefinitionData.ItemDefinition).lower() or str(obj.Inventory.DefinitionData.BalanceDefinition) in ("InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Truxican'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Specter'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Ogre'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Marine'"):
