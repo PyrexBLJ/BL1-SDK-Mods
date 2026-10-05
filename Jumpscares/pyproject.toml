@@ -8,5 +8,5 @@ description = "1/10000 chance for a jumpscare to pop up every second"
 name = "Jumpscares"
 license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
 supported_games = ["BL1"]
-download = ""
+download = "https://github.com/PyrexBLJ/BL1-SDK-Mods/raw/refs/heads/main/Jumpscares/Jumpscares.zip"
 version = "1.0.0"
