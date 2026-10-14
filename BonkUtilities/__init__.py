@@ -29,7 +29,8 @@ PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off",
 EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On", "Off", description="Displays a message on screen whenever a rare eridian item drops from an enemy or spawns in a chest")
 HybridDetector: BoolOption = BoolOption("Hybrid Detector", False, "On", "Off", description="Displays a message on screen whenever a hybrid weapon drops from an enemy or spawns in a chest, this WILL destroy any sense of childlike wonder/mystery/suspense you felt checking each drop to see if its the one.")
 AllowNemvader: BoolOption = BoolOption("Include Nemvader in Hybrid Detector", False, "Yes", "No", description="Turn this on to let the hybrid detector detect nemvader drops, leave it off to keep the mystery")
-AllowKnoxGemini: BoolOption = BoolOption("Include Knox Gemini in Hybrid Detector", False, "Yes", "No", description="Turn this on to let the hybrid detector detect knox gemini drops, leave it off because it was a dumb joke for a not real hybrid anyways")
+AllowKnoxGemini: BoolOption = BoolOption("Include Knox Gemini (fake one) in Hybrid Detector", False, "Yes", "No", description="Turn this on to let the hybrid detector detect knox gemini drops (the fake one not the real hybrid), leave it off because it was a dumb joke for a not real hybrid anyways")
+MoreHybridsSupport: BoolOption = BoolOption("Include More Hybrids in Hybrid Detector", True, "Yes", "No", description="Turn this on to make the hybrid detector check for the 8 new hybrids added with the 'More Hybrids' mod")
 KnoxxComDetector: BoolOption = BoolOption("Knoxx Com Detector", True, "On", "Off", description="Display a message on screen when a loyalty/dlc3 com drops")
 CustomItemDetector: BoolOption = BoolOption("Custom Item Detector", False, "On", "Off", description="Use the custom item detector list to check for drops, controlled via console commands")
 DetectorDetector: BoolOption = BoolOption("Detector Detector", False, "Yea", "Nah", description="The detector detector exists to detect when a detector detects a drop you want to be detected, then notifies you a detected drop was detected with a detector detected detector notification.")
@@ -479,7 +480,27 @@ def detectHybrid(item: UObject) -> bool:
         return True
     elif "CustomWeap_Repeater_KnoxsGold" in str(item.DefinitionData.BalanceDefinition) and "acc4_DoubleShot" in str(item.DefinitionData.AccessoryPartDefinition) and AllowKnoxGemini.value == True:
         return True
+
+    if MoreHybridsSupport.value == True:
+        # extended hybrids:
+        if "CustomWeap_Repeater_KnoxsGold" in str(item.DefinitionData.BalanceDefinition) and "acc4_SandS_Gemini" in str(item.DefinitionData.AccessoryPartDefinition):
+            return True
+        elif "CustomWeap_Repeater_LadiesFinger" in str(item.DefinitionData.BalanceDefinition) and "sight5_Hyperion_Invader" in str(item.DefinitionData.SightPartDefinition):
+            return True
+        elif "CustomWeap_Repeater_AthenasWisdom" in str(item.DefinitionData.BalanceDefinition) and "sight5_Hyperion_Invader" in str(item.DefinitionData.SightPartDefinition):
+            return True
+        elif "CustomWeap_SMG_Typhoon" in str(item.DefinitionData.BalanceDefinition) and "mag4_Dahl_Wildcat" in str(item.DefinitionData.MagazinePartDefinition):
+            return True
+        elif "CustomWeap_SupportMG_TheChopper" in str(item.DefinitionData.BalanceDefinition) and "mag5_VladofRevolution" in str(item.DefinitionData.MagazinePartDefinition):
+            return True
+        elif "CustomWeap_CombatShotgun_DahlJackal" in str(item.DefinitionData.BalanceDefinition) and "mag2_Dahl_Bulldog" in str(item.DefinitionData.MagazinePartDefinition):
+            return True
+        elif "CustomWeap_CombatRifle_TedioreAvenger" in str(item.DefinitionData.BalanceDefinition) and "body4_Tediore_Guardian" in str(item.DefinitionData.BodyPartDefinition):
+            return True
+        elif "CustomWeap_SniperRifle_JakobsBessie" in str(item.DefinitionData.BalanceDefinition) and "barrel4_Jakobs_Skullmasher" in str(item.DefinitionData.BarrelPartDefinition):
+            return True
     return False
+
 
 def GetDetectorSound(wantedcue: str) -> UObject:
     if wantedcue == "UI_Accept_RewardCue":
@@ -705,7 +726,7 @@ def DeleteCustomItemToTrack(args: Namespace) -> None:
         for item in customitems:
             file1.write(f"{item}\n")
         file1.close()
-        print(f"Removed {args.item} form the list")
+        print(f"Removed {args.item} from the list")
     return None
 
 DeleteCustomItemToTrack.add_argument("item", help="the string to remove")
@@ -734,6 +755,6 @@ def Enable() -> None:
     return None
 
 if Game.get_current() == Game.BL1E:
-    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, AllowKnoxGemini, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, DisableQuitToDesktop, TimeOfDayOptions])
+    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, AllowKnoxGemini, MoreHybridsSupport, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, DisableQuitToDesktop, TimeOfDayOptions])
 else:
-    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, AllowKnoxGemini, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])
+    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, AllowKnoxGemini, MoreHybridsSupport, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])

@@ -1,0 +1,12 @@
+[project]
+name = "MoreHybrids"
+version = "1.0.0"
+authors = [{ name = "Pyrex" }, { name = "RedxYeti" }]
+description = "Adds 8 new possible hybrid rolls to the game, these were prevented from spawning but follow the same rules the existing hybrids follow. These are the items: Knox Gold Gemini, Lady Finger Invader, Athenas Wisdom Invader, Typhoon Wildcat, Chopper Revolution, Jackal Bulldog, Avenger Guardian, Bessie Skullmasher. \nHaving this mod installed prevents them from being deleted from your characters on game restarts."
+
+[tool.sdkmod]
+name = "More Hybrids"
+license = {name = "GPL3", url = "https://choosealicense.com/licenses/gpl-3.0/" }
+supported_games = ["BL1", "BL1E"]
+download = "https://github.com/PyrexBLJ/BL1-SDK-Mods/raw/refs/heads/main/MoreHybrids/MoreHybrids.sdkmod"
+version = "1.0.0"

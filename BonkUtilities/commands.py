@@ -1,5 +1,6 @@
+import unrealsdk
 from argparse import Namespace
-from mods_base import command, get_pc
+from mods_base import command, get_pc, Game
 from mods_base.settings import SETTINGS_DIR
 
 @command("buhelp", description="Lists available commands from bonk utilities")
@@ -14,10 +15,19 @@ def spawnItems(args: Namespace) -> None:
         numofitems = 1
     else:
         numofitems = int(args.amount)
-    
-    while numofitems > 0:
-        get_pc().CheatManager.SpawnItemPool(str(args.pool))
-        numofitems -= 1
+
+    if Game.get_current() == Game.BL1:
+        while numofitems > 0:
+            get_pc().CheatManager.SpawnItemPool(str(args.pool))
+            numofitems -= 1
+    elif Game.get_current() == Game.BL1E:
+        defaultitempool = unrealsdk.find_class("ItemPool").ClassDefaultObject
+        userpool = unrealsdk.find_object("InventoryBalanceDefinition", str(args.pool))
+        wasteofanarray: list = []
+        zero = unrealsdk.make_struct("Vector")
+        _, items = defaultitempool.SpawnBalancedInventoryFromInventoryBalanceDefinition(userpool, numofitems, get_pc().MyHud.WPRI.ExpLevel, 2, get_pc(), wasteofanarray)
+        for item in items:
+            item.DropFrom(get_pc().Pawn.Location, zero, False)
         
 spawnItems.add_argument("pool", help="what pool the items come from")
 spawnItems.add_argument("amount", help="how many to spawn")
