@@ -24,3 +24,6 @@ Pop up a notification on screen and play a sound whenever a gun with plywood in 
 
 ![Jumpscares](https://github.com/PyrexBLJ/BL1-SDK-Mods/tree/main/Jumpscares)
 1/10000 chance of a jumpscare popping up every second. plays a random one by default.
+
+![More Hybrids](https://github.com/PyrexBLJ/BL1-SDK-Mods/tree/main/MoreHybrids)
+Lets 8 new hybrids spawn when farming items, 9 if you include the dove hornet on enhanced.
