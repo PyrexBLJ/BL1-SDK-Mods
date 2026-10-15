@@ -1,17 +1,21 @@
 from argparse import Namespace
-import unrealsdk #type: ignore
+import unrealsdk
 from typing import TypedDict
-from mods_base import command, keybind, EInputEvent, get_pc, build_mod, hook, SETTINGS_DIR, BoolOption #type: ignore
-from unrealsdk.hooks import Type #type: ignore
-from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction #type: ignore
+from mods_base import command, keybind, EInputEvent, get_pc, build_mod, hook, SETTINGS_DIR, BoolOption, ButtonOption, NestedOption
+from unrealsdk.hooks import Type
+from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction
 from .filestuff import *
 import os, json
+
+farms: list = []
 
 #from GooberLog import log
 
 initFarmTracker()
 
 doTracking: BoolOption = BoolOption("Enable Tracking", True, "Yes", "No")
+refreshFarms: ButtonOption = ButtonOption("Refresh Farms", on_press= lambda _: getFarmList())
+loadExistingFarm: NestedOption = NestedOption("Load Existing Farm", farms)
 
 grabnextenemy: bool = False
 grabnextobject: bool = False
@@ -74,6 +78,14 @@ def load(farmname: str) -> None:
     setValuestr(f"{SETTINGS_DIR}\\FarmTracker\\AutoLoad.txt", f"{currentfarm["farmname"]}.json")
     return None
 
+def getFarmList() -> None:
+    global farms
+    farms.clear()
+    for file in os.listdir(f"{SETTINGS_DIR}\\FarmTracker\\Farms"):
+        farms.append(ButtonOption(f"{str(file)}", on_press= lambda _: load(_.identifier)))
+    return None
+
+getFarmList()
 
 if getValuestr(f"{SETTINGS_DIR}\\FarmTracker\\AutoLoad.txt") != "None":
     print(f"Loading: {getValuestr(f"{SETTINGS_DIR}\\FarmTracker\\AutoLoad.txt")}")
@@ -116,11 +128,14 @@ newfarm.add_argument("farmname", help="the name to save the farm by")
 
 @command("listfarms", description="print out a list of previously saved farms")
 def farmList(args: Namespace) -> None:
+    global farms
+    farms.clear()
     if not os.path.exists(f"{SETTINGS_DIR}\\FarmTracker\\Farms"):
         print("FarmTracker/Farms folder does not exist, there are no saved farms")
         return None
     print("Saved farms:")
     for file in os.listdir(f"{SETTINGS_DIR}\\FarmTracker\\Farms"):
+        farms.append(str(file))
         print(f"{file}")
     return None
 
@@ -202,17 +217,19 @@ setEnemy.add_argument("enemyname", help="the name you want to check for when kil
 
 
 
-@keybind(identifier="Track Next Damaged Enemy", key=None, event_filter=EInputEvent.IE_Pressed)
+@keybind(identifier="Track Next Damaged Enemy", event_filter=EInputEvent.IE_Pressed)
 def doTrack():
     global grabnextenemy
     grabnextenemy = not grabnextenemy
     #displaymessage("Shoot the enemy you want to start tracking")
+    return
 
-@keybind(identifier="Track Next Used Object", key=None, event_filter=EInputEvent.IE_Pressed, description="open a chest or something")
+@keybind(identifier="Track Next Used Object", event_filter=EInputEvent.IE_Pressed, description="open a chest or something")
 def doTrackObject():
     global grabnextobject
     grabnextobject = not grabnextobject
     #displaymessage("Shoot the enemy you want to start tracking")
+    return
 
 
 
@@ -246,7 +263,7 @@ def killEnemy(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunc
         return None
     if obj.Class.Name != "WillowPlayerPawn":
         if obj.BalanceDefinitionState.BalanceDefinition != None:
-            if obj.BalanceDefinitionState.BalanceDefinition.Grades[0].GradeModifiers.DisplayName == currentfarm["enemyname"]:
+            if str(obj.BalanceDefinitionState.BalanceDefinition.Grades[0].GradeModifiers.DisplayName).lower() == str(currentfarm["enemyname"]).lower():
                 currentfarm["enemykills"] += 1
                 setValue(f"{SETTINGS_DIR}\\FarmTracker\\TrackedEnemyKills.txt", currentfarm["enemykills"])
                 setValuestr(f"{SETTINGS_DIR}\\FarmTracker\\TrackedEnemyWithCount.txt", f"{currentfarm["enemyname"]}: {currentfarm["enemykills"]}")
@@ -334,4 +351,4 @@ def render(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunctio
         __args.Canvas.DrawText(f"There is no farm loaded, use the newfarm command to create one", False, 2.5, 2.5)
     return None
 
-build_mod()
+build_mod(options=[doTracking, refreshFarms, loadExistingFarm])
