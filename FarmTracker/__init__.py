@@ -93,7 +93,7 @@ if getValuestr(f"{SETTINGS_DIR}\\FarmTracker\\AutoLoad.txt") != "None":
 
 @command("farmhelp", description="List available commands for the farm tracker")
 def farmHelp(args: Namespace) -> None:
-    print("Commands: do [command name] -h on any of these for more info\nnewfarm\nlistfarms\nsavefarm\nloadfarm\ntrackitem\nsetenemy\nsetkills\nsetitemcount\nsetlegendaries\nsetpearls\nwherefarm")
+    print("Commands: do [command name] -h on any of these for more info\nnewfarm\nlistfarms\nsavefarm\nloadfarm\ntrackitem\nsetenemy\nsetkills\nsetitemcount\nsetobjectcount\nsetlegendaries\nsetpearls\nwherefarm")
     return None
 
 @command("newfarm", description="create a new tracked farm by name")
@@ -180,6 +180,16 @@ def setDrops(args: Namespace) -> None:
     return None
 
 setDrops.add_argument("drops", help="the number of drops to set the tracker to")
+
+@command("setobjectcount", description="Set the number of interactions for the tracked object in the current farm")
+def setDrops(args: Namespace) -> None:
+    global currentfarm
+    currentfarm["trackedobjectcount"] = int(args.number)
+    setValuestr(f"{SETTINGS_DIR}\\FarmTracker\\FarmNameAndTrackedObjectCount.txt", f"{currentfarm["farmname"]}: {currentfarm["trackedobjectcount"]}")
+    setValue(f"{SETTINGS_DIR}\\FarmTracker\\TrackedObjectCount.txt", currentfarm["trackedobjectcount"])
+    return None
+
+setDrops.add_argument("number", help="the number of interactions to set the tracker to")
 
 @command("setlegendaries", description="Set the number of legendary drops in the current farm")
 def setLegendaries(args: Namespace) -> None:
