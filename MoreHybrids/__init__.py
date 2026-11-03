@@ -1,8 +1,11 @@
 import unrealsdk
-from mods_base import build_mod, hook, get_pc, ENGINE, SpinnerOption, SliderOption, Game
+from mods_base import build_mod, hook, get_pc, ENGINE, BoolOption, Game
 from unrealsdk.hooks import Type, add_hook, Block
 from unrealsdk.unreal import UObject, WrappedStruct, BoundFunction
 from typing import Any
+
+if Game.get_current() == Game.BL1E:
+    AvengerAccessory: BoolOption = BoolOption("Allow all avenger accessories", False, "Yes", "No", description="The avenger magically gained a fixed accessory roll on enhanced when it was not fixed on og, this reverts the behavior back to how it worked originally.")
 
 def DisableWeaponValidation(*_): # thanks yeti
     return Block, True
@@ -36,6 +39,8 @@ def setHybrids() -> None:
     trysetparts("dlc3_gd_customweapons.Pearlescent_PartCollections.PartCollection_SniperRifle_JakobsBessie", "BarrelPartData")
     if Game.get_current() == Game.BL1E:
         trysetparts("gd_customweapons.Retail_PartCollections.PartCollection_repeater_TheDove", "AccessoryPartData")
+        if AvengerAccessory.value == True:
+            trysetparts("dlc3_gd_customweapons.Pearlescent_PartCollections.PartCollection_CombatRifle_TedioreAvenger", "AccessoryPartData")
     return None
 
 @hook(hook_func="WillowGame.WillowPlayerController:SpawningProcessComplete", hook_type=Type.PRE)
@@ -50,4 +55,7 @@ def Enable() -> None:
         print("[More Hybrids] Failed to set hybrids on game load, will try again on character load.")
     return None
 
-build_mod(on_enable=Enable)
+if Game.get_current() == Game.BL1E:
+    build_mod(on_enable=Enable, options=[AvengerAccessory])
+else:
+    build_mod(on_enable=Enable)

@@ -182,7 +182,7 @@ def setDrops(args: Namespace) -> None:
 setDrops.add_argument("drops", help="the number of drops to set the tracker to")
 
 @command("setobjectcount", description="Set the number of interactions for the tracked object in the current farm")
-def setDrops(args: Namespace) -> None:
+def setObjCount(args: Namespace) -> None:
     global currentfarm
     currentfarm["trackedobjectcount"] = int(args.number)
     setValuestr(f"{SETTINGS_DIR}\\FarmTracker\\FarmNameAndTrackedObjectCount.txt", f"{currentfarm["farmname"]}: {currentfarm["trackedobjectcount"]}")
