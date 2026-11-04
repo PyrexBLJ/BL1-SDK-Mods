@@ -646,6 +646,8 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
                 for weapon in equippedweaps:
                     if obj == weapon:
                         return None
+                if obj.Inventory.bSelectRandomPartsOnInitialization == False:
+                    return None
                 file = open(f"{SETTINGS_DIR}\\PearlCount.txt", "+r")
                 numofdrops: int = 0
                 numofdrops = int(file.read())

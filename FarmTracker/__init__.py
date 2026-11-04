@@ -189,7 +189,7 @@ def setObjCount(args: Namespace) -> None:
     setValue(f"{SETTINGS_DIR}\\FarmTracker\\TrackedObjectCount.txt", currentfarm["trackedobjectcount"])
     return None
 
-setDrops.add_argument("number", help="the number of interactions to set the tracker to")
+setObjCount.add_argument("number", help="the number of interactions to set the tracker to")
 
 @command("setlegendaries", description="Set the number of legendary drops in the current farm")
 def setLegendaries(args: Namespace) -> None:
@@ -295,6 +295,8 @@ def trackDrop(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFunc
     for weapon in equippedweaps:
         if obj == weapon:
             return None
+    if obj.Inventory.bSelectRandomPartsOnInitialization == False: # ignore player drops
+        return None
     if currentfarm["trackeditem"].lower() in obj.Inventory.GetHumanReadableName().lower():
         currentfarm["trackeditemcount"] += 1
         setValue(f"{SETTINGS_DIR}\\FarmTracker\\TrackedItemCount.txt", currentfarm["trackeditemcount"])
