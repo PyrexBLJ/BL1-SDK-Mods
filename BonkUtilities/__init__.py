@@ -26,25 +26,46 @@ UseHLQNoclip: BoolOption = BoolOption("Use HLQ Noclip", True, "Yes", "No")
 DesiredFPS: SliderOption = SliderOption("Desired FPS", 120, 30, 1024, 1, True, on_change_while_enabled = lambda _, new_value: setFPS(_, new_value))
 MapforTravel: DropdownOption = DropdownOption("Map for Travel Keybind", "Arid Badlands", maps.mapnamelist)
 PearlDetector: BoolOption = BoolOption("Pearl Item Detector", True, "On", "Off", description="Displays a message on screen whenever a pearl drops from an enemy or spawns in a chest")
+
 EridianDetector: BoolOption = BoolOption("Rare Eridian Item Detector", True, "On", "Off", description="Displays a message on screen whenever a rare eridian item drops from an enemy or spawns in a chest")
+
+EDStampedingSpatter: BoolOption = BoolOption("Stampeding Spatter Gun", True, "On", "Off", description="Include the Stampeding Spatter Gun in the rare eridian detector")
+EDMegaCannon: BoolOption = BoolOption("Mega Cannon", True, "On", "Off", description="Include the Mega Cannon in the rare eridian detector")
+EDFirebomb: BoolOption = BoolOption("Firebomb", True, "On", "Off", description="Include the Firebomb in the rare eridian detector")
+EDFireball: BoolOption = BoolOption("Fireball", True, "On", "Off", description="Include the Fireball in the rare eridian detector")
+EDRollingSpatter: BoolOption = BoolOption("Rolling Spatter Gun", True, "On", "Off", description="Include the Rolling Spatter Gun in the rare eridian detector")
+EDSplatGun: BoolOption = BoolOption("Splat Gun", True, "On", "Off", description="Include the Splat Gun in the rare eridian detector")
+
+EridianDetectorOptions: NestedOption = NestedOption("Rare Eridian Options ->", [EDStampedingSpatter, EDMegaCannon, EDFirebomb, EDFireball, EDRollingSpatter, EDSplatGun])
+
 HybridDetector: BoolOption = BoolOption("Hybrid Detector", False, "On", "Off", description="Displays a message on screen whenever a hybrid weapon drops from an enemy or spawns in a chest, this WILL destroy any sense of childlike wonder/mystery/suspense you felt checking each drop to see if its the one.")
 AllowNemvader: BoolOption = BoolOption("Include Nemvader in Hybrid Detector", False, "Yes", "No", description="Turn this on to let the hybrid detector detect nemvader drops, leave it off to keep the mystery")
-AllowKnoxGemini: BoolOption = BoolOption("Include Knox Gemini (fake one) in Hybrid Detector", False, "Yes", "No", description="Turn this on to let the hybrid detector detect knox gemini drops (the fake one not the real hybrid), leave it off because it was a dumb joke for a not real hybrid anyways")
+#AllowKnoxGemini: BoolOption = BoolOption("Include Knox Gemini (fake one) in Hybrid Detector", False, "Yes", "No", description="Turn this on to let the hybrid detector detect knox gemini drops (the fake one not the real hybrid), leave it off because it was a dumb joke for a not real hybrid anyways")
 MoreHybridsSupport: BoolOption = BoolOption("Include More Hybrids in Hybrid Detector", True, "Yes", "No", description="Turn this on to make the hybrid detector check for the 8 new hybrids added with the 'More Hybrids' mod")
 KnoxxComDetector: BoolOption = BoolOption("Knoxx Com Detector", True, "On", "Off", description="Display a message on screen when a loyalty/dlc3 com drops")
 CustomItemDetector: BoolOption = BoolOption("Custom Item Detector", False, "On", "Off", description="Use the custom item detector list to check for drops, controlled via console commands")
 DetectorDetector: BoolOption = BoolOption("Detector Detector", False, "Yea", "Nah", description="The detector detector exists to detect when a detector detects a drop you want to be detected, then notifies you a detected drop was detected with a detector detected detector notification.")
-DetectorVolume: SliderOption = SliderOption("Detector Volume", 2.5, 0.0, 10.0, 0.1, False)
+
+PearlDetectorVolume: SliderOption = SliderOption("Pearl Detector Volume", 2.5, 0.0, 10.0, 0.1, False)
+EridianDetectorVolume: SliderOption = SliderOption("Eridian Detector Volume", 2.5, 0.0, 10.0, 0.1, False)
+HybridDetectorVolume: SliderOption = SliderOption("Hybrid Detector Volume", 2.5, 0.0, 10.0, 0.1, False)
+KnoxxComDetectorVolume: SliderOption = SliderOption("Knoxx Com Detector Volume", 2.5, 0.0, 10.0, 0.1, False)
+CustomItemDetectorVolume: SliderOption = SliderOption("Custom Item Detector Volume", 2.5, 0.0, 10.0, 0.1, False)
+
+DetectorVolumes: NestedOption = NestedOption("Detector Volumes ->", [PearlDetectorVolume, EridianDetectorVolume, HybridDetectorVolume, KnoxxComDetectorVolume, CustomItemDetectorVolume])
+
 ForceSpecificToD: BoolOption = BoolOption("Force a Specific Time Of Day", False, "Yes", "No", description="May require a map change to take effect", on_change_while_enabled = lambda _, new_value: mainTODToggle(_, new_value))
 DesiredTimeOfDay: SliderOption = SliderOption("Desired Time Of Day", 65.0, 0.0, 100.0, 0.1, False, description="May require a map change to take effect", on_change_while_enabled = lambda _, new_value: changeTOD(_, new_value))
 TimeOfDayRate: SliderOption = SliderOption("Time Of Day Cycle Rate", 0.1, 0.0, 100.0, 0.1, False, description="Sets how fast the day/night cycle is, default is 0.1. This is only for when Force a Specific Time Of Day is off. May require a map change to take effect", on_change_while_enabled = lambda _, new_value: setTODRate(_, new_value))
 CrawTracker: BoolOption = BoolOption("The Craw Tracker", False, "On", "Off", description="Tracks Craw kills, pearl drops, drop odds and the last run where u got a pearl. dumps all of these values into separate text files. Manual counter override commands: crawkills [kills], pearlcount [pearl count], lastpearl [last run where you got a pearl]", on_change_while_enabled = lambda _, new_value: crawTrackerToggle(_, new_value))
 HoldFFSpeed: SliderOption = SliderOption("Hold To Fast Forward Speed", 16, 0.1, 64, 0.1, False, description="This can also slow the game down if you want")
 DisableBlueTunnel: BoolOption = BoolOption("Disable Blue Tunnel", True, "Yes", "No")
+DisableIdleCallouts: BoolOption = BoolOption("Disable Idle Dialog", True, "Yes", "No")
 LogAwesomeLevels: BoolOption = BoolOption("Log Awesome levels to Console", False, "Yes", "No", description="Print out the level/gamestage/awesomelevel of enemies and interactive objects on kill or use")
 TrackLanceChests: BoolOption = BoolOption("Track Opened Lance Chests", True, "Yes", "No", description="Count how many lance chests you open, saved in a sdk_mods/settings/lancechests.txt file")
 AutoPickup: BoolOption = BoolOption("Money & Ammo Auto Pickup", True, "Yes", "No")
-TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
+ShootableChests: BoolOption = BoolOption("Shootable Chests", False, "On", "Off", description="Open lance/red/white chests when they take any damage")
+TimeOfDayOptions: NestedOption = NestedOption("Time Of Day Options ->", [ForceSpecificToD, DesiredTimeOfDay, TimeOfDayRate])
 if Game.get_current() == Game.BL1E:
     DisableQuitToDesktop: BoolOption = BoolOption("Disable Quit To Desktop", True, "Yes", "No")
 
@@ -197,8 +218,20 @@ def doPhotomode():
 def doNoclip():
     global noclip, myPawnButForNoclip
     if UseHLQNoclip.value == True:
-        get_pc().CheatManager.HLQNoClipToggle()
-        displaymessage("Toggled HLQ Noclip")
+        if Game.get_current() == Game.BL1:
+            get_pc().CheatManager.HLQNoClipToggle()
+            displaymessage("Toggled HLQ Noclip")
+        else:
+            if noclip == False:
+                get_pc().CheatManager.Ghost()
+                get_pc().Pawn.AirSpeed = NoclipSpeed.value
+                displaymessage("HLQ Noclip: <font color = \"#00FF00\">On</font>")
+                noclip = True
+            else:
+                get_pc().CheatManager.Walk()
+                get_pc().Pawn.AirSpeed = 500.0
+                displaymessage("HLQ Noclip: <font color = \"#FF0000\">Off</font>")
+                noclip = False
     else:
         if noclip == False:
             myPawnButForNoclip = get_pc().Pawn
@@ -225,6 +258,7 @@ def doNoclip():
 def doSelfRevive():
     if get_pc().Pawn.bInjuredState > 0 and not get_pc().Pawn.bIsDead:
         get_pc().Pawn.GoFromInjuredToHealthy()
+        get_pc().Pawn.EnableProtectionTimer()
         displaymessage("Revived!")
 
 @keybind(identifier="Save Location", key=None, event_filter=EInputEvent.IE_Pressed)
@@ -478,8 +512,8 @@ def detectHybrid(item: UObject) -> bool:
         return True
     elif "CustomWeap_SemiAutoSniper_KyrosPower" in str(item.DefinitionData.BalanceDefinition) and "sight5_Atlas_Cyclops" in str(item.DefinitionData.SightPartDefinition):
         return True
-    elif "CustomWeap_Repeater_KnoxsGold" in str(item.DefinitionData.BalanceDefinition) and "acc4_DoubleShot" in str(item.DefinitionData.AccessoryPartDefinition) and AllowKnoxGemini.value == True:
-        return True
+    #elif "CustomWeap_Repeater_KnoxsGold" in str(item.DefinitionData.BalanceDefinition) and "acc4_DoubleShot" in str(item.DefinitionData.AccessoryPartDefinition) and AllowKnoxGemini.value == True:
+    #    return True
 
     if MoreHybridsSupport.value == True:
         # extended hybrids:
@@ -501,31 +535,64 @@ def detectHybrid(item: UObject) -> bool:
             return True
     return False
 
+def DetectRareEridian(itemname: str) -> bool:
+    if "Eridian Stampeding Spatter Gun" in itemname and EDStampedingSpatter.value == True:
+        return True
+    elif "Mega Cannon" in itemname and EDMegaCannon.value == True:
+        return True
+    elif "Eridian Firebomb" in itemname and EDFirebomb.value == True:
+        return True
+    elif "Eridian Fireball" in itemname and EDFireball.value == True:
+        return True
+    elif "Eridian Rolling Spatter Gun" in itemname and EDRollingSpatter.value == True:
+        return True
+    elif "Eridian Splat Gun" in itemname and EDSplatGun.value == True:
+        return True
+    
+    return False
+
+# peashooter: py unrealsdk.find_object("WeaponNamePartDefinition", "gd_weap_repeater_pistol.Title.Title_DamageLow1_Peashooter").Expressions[1].ComparisonOperator = 3
 
 def GetDetectorSound(wantedcue: str) -> UObject:
-    if wantedcue == "UI_Accept_RewardCue":
+    if wantedcue == "Eridian_Cue":
         try:
-            sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_Detector_Sound_Cue")
+            sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_Eridian_Detector_Sound_Cue")
             return sound
         except:
-            rewardcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Detector_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"))
-            rewardcue.VolumeMultiplier = float(DetectorVolume.value)
+            rewardcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Eridian_Detector_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"))
+            rewardcue.VolumeMultiplier = float(EridianDetectorVolume.value)
             return rewardcue
-    elif wantedcue == "UI_Objectives_CompletedCue":
+    elif wantedcue == "Hybrid_Cue":
+            try:
+                sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_Hybrid_Detector_Sound_Cue")
+                return sound
+            except:
+                rewardcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Hybrid_Detector_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"))
+                rewardcue.VolumeMultiplier = float(HybridDetectorVolume.value)
+                return rewardcue
+    elif wantedcue == "Pearl_Cue":
+            try:
+                sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_Pearl_Detector_Sound_Cue")
+                return sound
+            except:
+                rewardcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Pearl_Detector_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Accept_RewardCue"))
+                rewardcue.VolumeMultiplier = float(PearlDetectorVolume.value)
+                return rewardcue
+    elif wantedcue == "KnoxxCom_Cue":
         try:
-            sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_Completed_Sound_Cue")
+            sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_KnoxxCom_Sound_Cue")
             return sound
         except:
-            completedcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_Completed_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Objectives_CompletedCue"))
-            completedcue.VolumeMultiplier = float(DetectorVolume.value)
+            completedcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_KnoxxCom_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.UI_Objectives_CompletedCue"))
+            completedcue.VolumeMultiplier = float(KnoxxComDetectorVolume.value)
             return completedcue
-    elif wantedcue == "Menu_CloseCue":
+    elif wantedcue == "CustomItem_Cue":
         try:
-            sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_MenuClose_Sound_Cue")
+            sound = unrealsdk.find_object("SoundCue", "Transient.Bonk_CustomItem_Sound_Cue")
             return sound
         except:
-            completedcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_MenuClose_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.Menu_CloseCue"))
-            completedcue.VolumeMultiplier = float(DetectorVolume.value)
+            completedcue = unrealsdk.construct_object("SoundCue", ENGINE.Outer, "Bonk_CustomItem_Sound_Cue", template_obj=unrealsdk.find_object("SoundCue", "Interface.User_Interface.Menu_CloseCue"))
+            completedcue.VolumeMultiplier = float(CustomItemDetectorVolume.value)
             return completedcue
 
 # 101-169 pearl rarity
@@ -537,30 +604,30 @@ def detectPearl(obj: UObject, __args: WrappedStruct, __ret: any, __func: BoundFu
         return None
     if str(obj.Inventory.GetShortHumanReadableName()) != "":
         if str(obj.Inventory.GetShortHumanReadableName()).__contains__(" ") == True:
-            itemname: list = str(obj.Inventory.GetShortHumanReadableName()).split(" ", 1)
-            if itemname[1] in ("Eridian Stampeding Spatter Gun", "Mega Cannon", "Eridian Firebomb", "Eridian Fireball", "Eridian Rolling Spatter Gun", "Eridian Splat Gun"):
-                if EridianDetector.value == True:
+            if EridianDetector.value == True:
+                itemname: list = str(obj.Inventory.GetShortHumanReadableName()).split(" ", 1)
+                if DetectRareEridian(itemname[1]):
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#fc9d05\" size = \"32\">Rare Eridian Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-                    get_pc().PlaySound(GetDetectorSound("UI_Accept_RewardCue"), False)
+                    get_pc().PlaySound(GetDetectorSound("Eridian_Cue"), False)
         if HybridDetector.value == True:
             if "WillowWeapon" in str(obj.Inventory):
                 if detectHybrid(obj.Inventory) == True:
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color=\"#ffadad\" size=\"32\">H</font><font color=\"#ffd6a5\" size=\"32\">y</font><font color=\"#fdffb6\" size=\"32\">b</font><font color=\"#caffbf\" size=\"32\">r</font><font color=\"#9bf6ff\" size=\"32\">i</font><font color=\"#a0c4ff\" size=\"32\">d</font> <font color=\"#bdb2ff\" size=\"32\">D</font><font color=\"#ffc6ff\" size=\"32\">r</font><font color=\"#ffadad\" size=\"32\">o</font><font color=\"#ffd6a5\" size=\"32\">p</font> <font color=\"#fdffb6\" size=\"32\">D</font><font color=\"#caffbf\" size=\"32\">e</font><font color=\"#9bf6ff\" size=\"32\">t</font><font color=\"#a0c4ff\" size=\"32\">e</font><font color=\"#bdb2ff\" size=\"32\">c</font><font color=\"#ffc6ff\" size=\"32\">t</font><font color=\"#ffadad\" size=\"32\">e</font><font color=\"#ffd6a5\" size=\"32\">d</font><font color=\"#fdffb6\" size=\"32\">!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI) # if this works its gonna look so fuckin cool
-                    get_pc().PlaySound(GetDetectorSound("UI_Accept_RewardCue"), False)
+                    get_pc().PlaySound(GetDetectorSound("Hybrid_Cue"), False)
         if obj.InventoryRarityLevel > 100 and obj.InventoryRarityLevel < 170:
             if PearlDetector.value == True:
                 get_pc().myHUD.GetHUDMovie().AddCriticalText(0, "<font color = \"#00ffc8\" size = \"32\">Pearl Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-                get_pc().PlaySound(GetDetectorSound("UI_Accept_RewardCue"), False)
+                get_pc().PlaySound(GetDetectorSound("Pearl_Cue"), False)
         if CustomItemDetector.value == True:
             for item in customitems:
                 if item.lower() in str(obj.Inventory.GetShortHumanReadableName()).lower():
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#{GetRarityColor(obj.InventoryRarityLevel)}\" size = \"20\">{obj.Inventory.GetShortHumanReadableName()} Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-                    get_pc().PlaySound(GetDetectorSound("Menu_CloseCue"), False)
+                    get_pc().PlaySound(GetDetectorSound("CustomItem_Cue"), False)
         if KnoxxComDetector.value == True:
             if obj.Inventory.GetCategoryKey() == "Comm":
                 if "loyalty" in str(obj.Inventory.DefinitionData.ItemDefinition).lower() or str(obj.Inventory.DefinitionData.BalanceDefinition) in ("InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Truxican'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Specter'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Ogre'", "InventoryBalanceDefinition'dlc3_gd_customitems.Items.CustomItem_ClassMod_Marine'"):
                     get_pc().myHUD.GetHUDMovie().AddCriticalText(0, f"<font color = \"#{GetRarityColor(obj.InventoryRarityLevel)}\" size = \"24\">Knoxx Com Drop Detected!</font>", 5.0, get_pc().myHUD.WhiteColor, get_pc().myHUD.WPRI)
-                    get_pc().PlaySound(GetDetectorSound("UI_Objectives_CompletedCue"), False)
+                    get_pc().PlaySound(GetDetectorSound("KnoxxCom_Cue"), False)
         if AutoPickup.value == True:
             if "ammo" in obj.Inventory.GetCategoryKey().lower() or "money" in obj.Inventory.GetCategoryKey().lower() or "instahealth" in obj.Inventory.GetCategoryKey().lower() or "grenade" in obj.Inventory.GetCategoryKey().lower():
                 if obj.Inventory.CanBeUsedBy(get_pc().Pawn):
@@ -690,6 +757,19 @@ def touchPickup(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction
                     args.Pickup.Inventory.DefinitionData.ItemDefinition.bAutomaticallyPickup = True
     return None
 
+@hook("WillowGame.WillowInteractiveObject:TakeDamage", Type.PRE)
+def TakeDamage(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> None:
+    if ShootableChests.value == True:
+        if str(obj.InteractiveObjectDefinition.Name) in ("InteractiveObj_TreasureChest", "InteractiveObj_crimson_Chest", "InteractiveObj_Crate_Metal") and obj.bCanBeUsed:
+            obj.UseObject(get_pc().Pawn)
+    return None
+
+@hook("WillowGame.WillowPlayerController:ClientHearDialog", Type.PRE)
+def ClientHearDialog(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> type[Block] | None:
+    if args.DialogType.Name == "PlayerIdle" and DisableIdleCallouts.value == True:
+        return Block
+    return None
+
 if Game.get_current() == Game.BL1E:
     @hook("WillowGame.WillowGFxLobbyTools:menuAddItem", Type.PRE)
     def menuAddItemHook(obj: UObject, args: WrappedStruct, ret: any, func: BoundFunction) -> type[Block] | None:
@@ -755,6 +835,6 @@ def Enable() -> None:
     return None
 
 if Game.get_current() == Game.BL1E:
-    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, AllowKnoxGemini, MoreHybridsSupport, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, DisableQuitToDesktop, TimeOfDayOptions])
+    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, EridianDetectorOptions, HybridDetector, AllowNemvader, MoreHybridsSupport, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolumes, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, DisableIdleCallouts, LogAwesomeLevels, TrackLanceChests, AutoPickup, ShootableChests, DisableQuitToDesktop, TimeOfDayOptions])
 else:
-    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, HybridDetector, AllowNemvader, AllowKnoxGemini, MoreHybridsSupport, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolume, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, LogAwesomeLevels, TrackLanceChests, AutoPickup, TimeOfDayOptions])
+    build_mod(on_enable=Enable, options=[FOV, DesiredFPS, MsgDisplayTime, UseHLQNoclip, NoclipSpeed, PearlDetector, EridianDetector, EridianDetectorOptions, HybridDetector, AllowNemvader, MoreHybridsSupport, KnoxxComDetector, CustomItemDetector, DetectorDetector, DetectorVolumes, MapforTravel, CrawTracker, HoldFFSpeed, DisableBlueTunnel, DisableIdleCallouts, LogAwesomeLevels, TrackLanceChests, AutoPickup, ShootableChests, TimeOfDayOptions])

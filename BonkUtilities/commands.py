@@ -5,10 +5,10 @@ from mods_base.settings import SETTINGS_DIR
 
 @command("buhelp", description="Lists available commands from bonk utilities")
 def BUHelp(args: Namespace) -> None:
-    print("Commands:\n\ndropitem [pool] [amount]\ncrawkills [kill count]\npearlcount [drop count]\nlastpearl [run number]\naddcustomitem [string to search for]\ndeletecustomitem [string to remove]\nlistcustomitems\nsetlancechests [number of chests]")
+    print("Commands:\n\ndroppool [pool] [amount]\ndropitem [inventorybalancedefinition] [amount]\ncrawkills [kill count]\npearlcount [drop count]\nlastpearl [run number]\naddcustomitem [string to search for]\ndeletecustomitem [string to remove]\nlistcustomitems\nsetlancechests [number of chests]")
     return None
 
-@command("dropitem", description="spawns the specified number of items from a loot pool: spawnitem pool amount")
+@command("droppool", description="spawns the specified number of items from a loot pool: droppool pool amount")
 def spawnItems(args: Namespace) -> None:
     numofitems = 1
     if args.amount == None:
@@ -16,21 +16,34 @@ def spawnItems(args: Namespace) -> None:
     else:
         numofitems = int(args.amount)
 
-    if Game.get_current() == Game.BL1:
-        while numofitems > 0:
-            get_pc().CheatManager.SpawnItemPool(str(args.pool))
-            numofitems -= 1
-    elif Game.get_current() == Game.BL1E:
-        defaultitempool = unrealsdk.find_class("ItemPool").ClassDefaultObject
-        userpool = unrealsdk.find_object("InventoryBalanceDefinition", str(args.pool))
-        wasteofanarray: list = []
-        zero = unrealsdk.make_struct("Vector")
-        _, items = defaultitempool.SpawnBalancedInventoryFromInventoryBalanceDefinition(userpool, numofitems, get_pc().MyHud.WPRI.ExpLevel, 2, get_pc(), wasteofanarray)
-        for item in items:
-            item.DropFrom(get_pc().Pawn.Location, zero, False)
+    while numofitems > 0:
+        get_pc().CheatManager.SpawnItemPool(str(args.pool))
+        numofitems -= 1
+    return None
+        
         
 spawnItems.add_argument("pool", help="what pool the items come from")
 spawnItems.add_argument("amount", help="how many to spawn")
+
+@command("dropitem", description="spawns the specified number of items from a inventorybalancedefinition: dropitem invbaldef amount")
+def dropItem(args: Namespace) -> None:
+    numofitems = 1
+    if args.amount == None:
+        numofitems = 1
+    else:
+        numofitems = int(args.amount)
+
+    defaultitempool = unrealsdk.find_class("ItemPool").ClassDefaultObject
+    userpool = unrealsdk.find_object("InventoryBalanceDefinition", str(args.itembalance))
+    wasteofanarray: list = []
+    zero = unrealsdk.make_struct("Vector")
+    _, items = defaultitempool.SpawnBalancedInventoryFromInventoryBalanceDefinition(userpool, numofitems, get_pc().MyHud.WPRI.ExpLevel, 65, get_pc(), wasteofanarray)
+    for item in items:
+        item.DropFrom(get_pc().Pawn.Location, zero, False)
+    return None
+
+dropItem.add_argument("itembalance", help="the name of the InventoryBalanceDefinition you want to spawn")
+dropItem.add_argument("amount", help="how many to spawn")
 
 @command("crawkills", description="set the number of craw kills for the counter")
 def crawKills(args: Namespace) -> None:
